@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { useAccount } from 'wagmi'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useToast } from '../context/ToastContext'
 import { formatUSDC, shortAddr } from '../lib/config'
 
@@ -52,45 +54,15 @@ const MULTI_TABLE = [
 ]
 
 export default function Admin() {
+  const { address, isConnected } = useAccount()
+  const { openConnectModal } = useConnectModal()
   const { addToast } = useToast()
-  const [authenticated, setAuthenticated] = useState(false)
-  const [password, setPassword] = useState('')
-  const [pwError, setPwError] = useState('')
-  const [attempts, setAttempts] = useState(0)
-  const [lockedUntil, setLockedUntil] = useState(0)
   const [resolving, setResolving] = useState(null)
   const [tab, setTab] = useState('pending')
   const [searchMarkets, setSearchMarkets] = useState('')
 
-  const handleLogin = () => {
-    const now = Date.now()
-    if (now < lockedUntil) {
-      const secs = Math.ceil((lockedUntil - now) / 1000)
-      setPwError(`Too many attempts. Wait ${secs}s`)
-      return
-    }
-    const adminPw = import.meta.env.VITE_ADMIN_PASSWORD
-    if (!adminPw) {
-      setPwError('VITE_ADMIN_PASSWORD not set in .env')
-      return
-    }
-    if (password === adminPw) {
-      setAuthenticated(true)
-      setPwError('')
-      setAttempts(0)
-    } else {
-      const next = attempts + 1
-      setAttempts(next)
-      if (next >= 5) {
-        setLockedUntil(Date.now() + 30000)
-        setPwError('Too many attempts. Locked for 30s.')
-        setAttempts(0)
-      } else {
-        setPwError(`Incorrect password (${5 - next} left)`)
-      }
-      setPassword('')
-    }
-  }
+  // Auth: wallet-based only — no password in the bundle
+  const isAdmin = isConnected && address?.toLowerCase() === ADMIN_WALLET.toLowerCase()
 
   const handleResolve = async (betId, outcome) => {
     setResolving(`${betId}-${outcome}`)
@@ -104,28 +76,31 @@ export default function Admin() {
     }
   }
 
-  if (!authenticated) {
+  // Not connected
+  if (!isConnected) {
     return (
       <div className="page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
-        <div style={{ background: '#0D0D0D', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '20px', padding: '36px', width: '100%', maxWidth: '380px', boxShadow: '0 24px 80px rgba(0,0,0,0.8)' }}>
-          <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-            <div style={{ fontSize: '36px', marginBottom: '12px' }}>🔐</div>
-            <h2 style={{ fontSize: '20px', fontWeight: 800 }}>Admin Panel</h2>
-            <p style={{ fontSize: '13px', color: '#555', marginTop: '6px' }}>Enter your admin password</p>
-          </div>
-          <input
-            className="input"
-            type="password"
-            placeholder="Admin password"
-            value={password}
-            onChange={e => { setPassword(e.target.value); setPwError('') }}
-            onKeyDown={e => e.key === 'Enter' && handleLogin()}
-            style={{ marginBottom: '10px' }}
-          />
-          {pwError && <div style={{ fontSize: '12px', color: 'var(--no-color)', marginBottom: '10px' }}>{pwError}</div>}
-          <button className="btn btn-gold" style={{ width: '100%', fontWeight: 700 }} onClick={handleLogin}>
-            Enter Admin
+        <div style={{ background: '#0D0D0D', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '20px', padding: '36px', width: '100%', maxWidth: '380px', textAlign: 'center' }}>
+          <div style={{ fontSize: '36px', marginBottom: '12px' }}>🔐</div>
+          <h2 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '8px' }}>Admin Panel</h2>
+          <p style={{ fontSize: '13px', color: '#555', marginBottom: '24px' }}>Connect your admin wallet to continue</p>
+          <button className="btn btn-gold" style={{ width: '100%', fontWeight: 700 }} onClick={openConnectModal}>
+            Connect Wallet
           </button>
+        </div>
+      </div>
+    )
+  }
+
+  // Wrong wallet
+  if (!isAdmin) {
+    return (
+      <div className="page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+        <div style={{ background: '#0D0D0D', border: '1px solid rgba(232,93,93,0.2)', borderRadius: '20px', padding: '36px', width: '100%', maxWidth: '380px', textAlign: 'center' }}>
+          <div style={{ fontSize: '36px', marginBottom: '12px' }}>⛔</div>
+          <h2 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '8px' }}>Access Denied</h2>
+          <p style={{ fontSize: '13px', color: '#555', marginBottom: '8px' }}>This wallet is not authorised.</p>
+          <p style={{ fontSize: '12px', color: '#444', fontFamily: 'var(--mono)' }}>{shortAddr(address)}</p>
         </div>
       </div>
     )
@@ -146,7 +121,7 @@ export default function Admin() {
             </div>
             <p style={{ fontSize: '13px', color: '#555' }}>Callit · Base Mainnet · Factory: 0x4efc...7818</p>
           </div>
-          <button className="btn btn-ghost btn-sm" onClick={() => setAuthenticated(false)}>Logout</button>
+          <button className="btn btn-ghost btn-sm" style={{ fontFamily: 'var(--mono)', fontSize: '12px' }}>{shortAddr(address)}</button>
         </div>
 
         {/* Stats */}
