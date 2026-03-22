@@ -4,6 +4,9 @@ import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useToast } from '../context/ToastContext'
 import { formatUSDC, shortAddr } from '../lib/config'
 
+// Only this wallet can access the admin panel
+const ADMIN_WALLET = '0x3dc5b334EA7a6a33da61F950bBEfaC615cF1A55b'
+
 const PENDING_BETS = [
   {
     id: 2, type: 'P2P',
