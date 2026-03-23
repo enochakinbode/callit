@@ -3,48 +3,18 @@ import { Link } from 'react-router-dom'
 import { useAccount } from 'wagmi'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import Logo from '../components/Logo'
+import BetCard from '../components/BetCard'
 import AcceptBetModal from '../components/AcceptBetModal'
 import MarketDetailModal from '../components/MarketDetailModal'
 import { useToast } from '../context/ToastContext'
 import { MIN_STAKE_USDC, MAX_STAKE_USDC, calcCombinedProb } from '../lib/config'
+import { P2P_MARKETS } from '../data/markets'
+
+// Show first 3 open P2P markets as trending
+const TRENDING_P2P = P2P_MARKETS.filter(m => m.status === 0).slice(0, 3)
 
 const sr = (seed, i) => ((seed * 9301 + i * 49297 + 233) % 233280) / 233280
 
-const TRENDING_P2P = [
-  {
-    id: 200, description: 'ETH will enter $4,000 by April 30, 2026 at 11:59 PM UTC',
-    baseProb: 65, pool: '$130', category: 'Crypto', status: 'Open', resType: 'auto',
-    creatorAbove: true, creatorBelievesYes: true,
-    creatorStake: BigInt(65000000), acceptorStake: BigInt(0), totalPool: BigInt(65000000),
-    resolutionTime: BigInt(Math.floor(new Date('2026-04-30T23:59:00Z').getTime() / 1000)),
-    creator: '0x3dc5b334EA7a6a33da61F950bBEfaC615cF1A55b',
-    acceptor: '0x0000000000000000000000000000000000000000',
-    outcome: 0, token: 0,
-    oracle: '0x71041dddad3595F9CEd3dCCFBe3D1F4b0a16Bb70', targetPrice: BigInt(4000) * BigInt(100000000),
-  },
-  {
-    id: 201, description: 'Chelsea will NOT win the Premier League title in the 2025/26 season',
-    baseProb: 72, pool: '$200', category: 'Sports', status: 'Open', resType: 'manual',
-    creatorAbove: false, creatorBelievesYes: false,
-    creatorStake: BigInt(100000000), acceptorStake: BigInt(0), totalPool: BigInt(100000000),
-    resolutionTime: BigInt(Math.floor(new Date('2026-05-25T22:00:00Z').getTime() / 1000)),
-    creator: '0x742d35Cc6634C0532925a3b8D4C9A3456789ABCD',
-    acceptor: '0x0000000000000000000000000000000000000000',
-    outcome: 0, token: 0,
-    oracle: '0x0000000000000000000000000000000000000000', targetPrice: BigInt(0),
-  },
-  {
-    id: 202, description: 'Nigeria Naira will NOT stabilize below 1,500 to the dollar by Dec 31, 2026',
-    baseProb: 69, pool: '$60', category: 'Economy', status: 'Open', resType: 'manual',
-    creatorAbove: false, creatorBelievesYes: false,
-    creatorStake: BigInt(60000000), acceptorStake: BigInt(0), totalPool: BigInt(60000000),
-    resolutionTime: BigInt(Math.floor(new Date('2026-12-31T23:59:00Z').getTime() / 1000)),
-    creator: '0x1234567890ABCDEF1234567890abcdef12345678',
-    acceptor: '0x0000000000000000000000000000000000000000',
-    outcome: 0, token: 0,
-    oracle: '0x0000000000000000000000000000000000000000', targetPrice: BigInt(0),
-  },
-]
 
 const TRENDING_MULTI = [
   {
@@ -73,74 +43,6 @@ const STATS = [
   { label: 'Network', value: 'Base', sub: 'Mainnet live', icon: '⛓' },
 ]
 
-// ── Trending P2P Card — matches BetCard minimal design ───────
-function TrendingP2PCard({ bet, onCallIt }) {
-  const [showDetail, setShowDetail] = useState(false)
-  const seedBase = bet.id + 3
-  const [liveYes, setLiveYes] = useState(bet.baseProb || 50)
-
-  useEffect(() => {
-    const t = setInterval(() => {
-      setLiveYes(prev => parseFloat(Math.max(48, Math.min(52, prev + (Math.random() - 0.5) * 1.2)).toFixed(1)))
-    }, 3500 + seedBase % 2000)
-    return () => clearInterval(t)
-  }, [seedBase])
-
-  const liveNo = parseFloat((100 - liveYes).toFixed(1))
-  const acceptorSide = bet.creatorBelievesYes ? 'NO' : 'YES'
-  const acceptorCents = Math.round(acceptorSide === 'YES' ? liveYes : liveNo)
-  const resDate = new Date(Number(bet.resolutionTime) * 1000)
-  const resDateStr = resDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-  const resTimeStr = resDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
-  const catColor = { Crypto: 'badge-gold', Sports: 'badge-green', Economy: 'badge-gray', Politics: 'badge-blue', 'Social Media': 'badge-purple' }
-  const dl = Math.max(0, Math.ceil((Number(bet.resolutionTime) * 1000 - Date.now()) / 86400000))
-
-  return (
-    <div className="card card-gold" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-      {/* Badges */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-          <span className={`badge ${catColor[bet.category] || 'badge-gray'}`}>{bet.category}</span>
-          <span className="badge badge-gray">{bet.status}</span>
-          <span className={`badge ${bet.resType === 'auto' ? 'badge-auto' : 'badge-manual'}`}>{bet.resType === 'auto' ? '⚡ AUTO' : '🛡 MANUAL'}</span>
-        </div>
-        <span style={{ fontSize: '11px', color: dl < 7 ? 'var(--no-color)' : '#555', fontWeight: 700, flexShrink: 0 }}>{dl}d left</span>
-      </div>
-
-      {/* Creator statement */}
-      <p style={{ fontSize: '14px', fontWeight: 600, color: '#FFF', lineHeight: 1.55, margin: 0 }}>{bet.description}</p>
-
-      {/* Expiry */}
-      <div style={{ display: 'flex', gap: '4px', alignItems: 'center', fontSize: '12px', color: '#555' }}>
-        <span>🕐</span>
-        <span>{resDateStr} · {resTimeStr} UTC</span>
-      </div>
-
-      {/* Pool */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
-        <span style={{ color: '#555' }}>Pool</span>
-        <span style={{ fontWeight: 700, color: 'var(--gold)', fontFamily: 'var(--mono)' }}>{bet.pool} USDC</span>
-      </div>
-
-      {/* CALL IT */}
-      <button
-        className={`btn ${acceptorSide === 'YES' ? 'btn-yes' : 'btn-no'}`}
-        style={{ width: '100%', fontWeight: 800, fontSize: '15px', padding: '13px' }}
-        onClick={() => onCallIt({ ...bet, side: acceptorSide })}
-      >
-        CALL IT — {acceptorSide} {acceptorCents}¢
-      </button>
-
-      {showDetail && (
-        <MarketDetailModal
-          market={{ ...bet, baseProb: bet.baseProb, category: bet.category, type: 'P2P', status: bet.status, creatorBelievesYes: bet.creatorBelievesYes, endDate: resDateStr, endTime: resTimeStr + ' UTC' }}
-          onClose={() => setShowDetail(false)}
-          onCallIt={(m, side) => { setShowDetail(false); onCallIt({ ...bet, side }) }}
-        />
-      )}
-    </div>
-  )
-}
 
 // ── Trending Multi Card ───────────────────────────────────────
 function TrendingMultiCard({ mb }) {
@@ -389,7 +291,7 @@ export default function Home() {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '14px' }}>
             {TRENDING_P2P.map(bet => (
-              <TrendingP2PCard key={bet.id} bet={bet} onCallIt={setAcceptingBet} />
+              <BetCard key={bet.id} bet={bet} currentUser={null} onAccept={setAcceptingBet} onCancel={() => {}} />
             ))}
           </div>
         </div>

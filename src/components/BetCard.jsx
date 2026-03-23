@@ -111,10 +111,15 @@ export default function BetCard({ bet, currentUser, onAccept, onCancel }) {
         </button>
       )}
 
-      {isOpen && isCreator && (
-        <button className="btn btn-danger btn-sm" onClick={() => onCancel?.(bet.id)}>
-          Cancel Market
-        </button>
+      {isOpen && isCreator && bet.acceptor === '0x0000000000000000000000000000000000000000' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <div style={{ fontSize: '11px', color: '#666', textAlign: 'center', padding: '4px 0' }}>
+            ⚠️ Once someone accepts, this market cannot be cancelled
+          </div>
+          <button className="btn btn-danger btn-sm" onClick={() => onCancel?.(bet.id)}>
+            Cancel Market
+          </button>
+        </div>
       )}
 
       {isMatched && (

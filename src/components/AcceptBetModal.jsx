@@ -347,6 +347,19 @@ export default function AcceptBetModal({ bet, onClose, onSuccess }) {
           </div>
         </div>
 
+        {/* Cannot cancel warning — shown to acceptor before they stake */}
+        <div style={{ background: 'rgba(232,93,93,0.06)', border: '1px solid rgba(232,93,93,0.18)', borderRadius: '10px', padding: '10px 14px', marginBottom: '14px' }}>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+            <span style={{ fontSize: '14px', flexShrink: 0 }}>🔒</span>
+            <div>
+              <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--no-color)', marginBottom: '3px' }}>This bet cannot be cancelled once staked</div>
+              <p style={{ fontSize: '12px', color: '#888', lineHeight: 1.6, margin: 0 }}>
+                By confirming, you are locking your stake into the smart contract. Neither you nor the creator can cancel after this point. Only market expiry or resolution will release the funds.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Manual warning */}
         {isManual && (
           <div style={{ background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.18)', borderRadius: '8px', padding: '10px 14px', marginBottom: '16px', fontSize: '12px', color: '#fbbf24', lineHeight: 1.5 }}>
