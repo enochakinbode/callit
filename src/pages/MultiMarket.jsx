@@ -16,7 +16,7 @@ const CAT_COLOR = {
 // ── Liquid fill gauge — water inside a circle, rises/falls ──
 // Green >= 50.1%, Red <= 49.99%. Level matches actual probability.
 // clipPath keeps everything strictly inside the circle boundary.
-function CircleGauge({ prob, prevProb, size = 72 }) {
+function CircleGauge({ prob, prevProb, size = 52 }) {
   const isGreen = prob >= 50
   const waterFill  = isGreen ? '#26A17B' : '#E85D5D'
   const waterLight = isGreen ? 'rgba(38,161,123,0.3)' : 'rgba(232,93,93,0.3)'
@@ -104,7 +104,7 @@ function CircleGauge({ prob, prevProb, size = 72 }) {
         gap: '1px', pointerEvents: 'none',
       }}>
         <span style={{
-          fontSize: '8px', fontWeight: 800,
+          fontSize: '7px', fontWeight: 800,
           color: isUp ? '#5eead4' : '#fca5a5',
           lineHeight: 1, fontFamily: 'var(--mono)',
           textShadow: '0 0 8px rgba(0,0,0,1)',
@@ -112,7 +112,7 @@ function CircleGauge({ prob, prevProb, size = 72 }) {
           {isUp ? '▲' : '▼'}{Math.abs(change).toFixed(1)}
         </span>
         <span style={{
-          fontSize: '14px', fontWeight: 900,
+          fontSize: '11px', fontWeight: 900,
           color: '#FFFFFF',
           lineHeight: 1, fontFamily: 'var(--mono)',
           textShadow: '0 0 8px rgba(0,0,0,1), 0 2px 4px rgba(0,0,0,0.9)',
@@ -120,7 +120,7 @@ function CircleGauge({ prob, prevProb, size = 72 }) {
           {prob}%
         </span>
         <span style={{
-          fontSize: '7px', color: 'rgba(255,255,255,0.85)',
+          fontSize: '6px', color: 'rgba(255,255,255,0.85)',
           lineHeight: 1, letterSpacing: '0.04em',
           textShadow: '0 0 6px rgba(0,0,0,1)',
         }}>
@@ -171,13 +171,7 @@ function SingleMarketCard({ market, selection, onSelect }) {
           </div>
           <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)', lineHeight: 1.45, margin: 0 }}>{market.description}</p>
         </div>
-        <CircleGauge prob={Math.round(liveYes)} prevProb={Math.round(prevYes)} size={72} />
-      </div>
-
-      {/* Prob bar */}
-      <div className="prob-bar-dual" style={{ height: '5px' }}>
-        <div className="prob-bar-yes" style={{ width: `${liveYes}%`, transition: 'width 0.8s ease' }} />
-        <div className="prob-bar-no" style={{ width: `${liveNo}%`, transition: 'width 0.8s ease' }} />
+        <CircleGauge prob={Math.round(liveYes)} prevProb={Math.round(prevYes)} size={52} />
       </div>
 
       {/* YES/NO buttons — directly, no price boxes */}
@@ -206,7 +200,6 @@ function SingleMarketCard({ market, selection, onSelect }) {
         onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'; e.currentTarget.style.background = 'rgba(255,255,255,0.03)' }}
       >
         <span style={{ fontSize: '12px', color: '#666' }}>📊 Chart & Details · <span style={{ color: 'var(--text-muted)' }}>{market.bettors || 0} bettors</span></span>
-        <span style={{ fontSize: '11px', color: '#555', fontFamily: 'var(--mono)' }}>{market.endDate}</span>
       </button>
 
       {showDetail && (
@@ -222,7 +215,6 @@ function SingleMarketCard({ market, selection, onSelect }) {
 
 // ── Grouped multi-outcome card — 2 visible, scroll button for rest ──
 function GroupedMarketCard({ group, selections, onSelect }) {
-  const [showAll, setShowAll] = useState(false)
   const [liveProbs, setLiveProbs] = useState(() =>
     Object.fromEntries(group.outcomes.map(o => [o.id, o.yesProb]))
   )
@@ -241,8 +233,7 @@ function GroupedMarketCard({ group, selections, onSelect }) {
   }, [group.id])
 
   // Show only 2 outcomes by default
-  const visibleOutcomes = showAll ? group.outcomes : group.outcomes.slice(0, 2)
-  const hasMore = group.outcomes.length > 2
+  const visibleOutcomes = group.outcomes
   const freq = group.frequency || 'One-time'
 
   return (
@@ -256,10 +247,8 @@ function GroupedMarketCard({ group, selections, onSelect }) {
 
       <p style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)', lineHeight: 1.45, margin: 0 }}>{group.title}</p>
 
-      {/* Outcomes — 2 visible, scroll button for more */}
-      <div style={{ display: 'flex', gap: '6px', alignItems: 'stretch' }}>
-        {/* Outcomes list */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '5px' }}>
+      {/* Outcomes — 2 visible, natural scroll for more */}
+      <div style={{ overflowY: 'auto', maxHeight: '104px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
           {visibleOutcomes.map(outcome => {
             const yp = liveProbs[outcome.id] || outcome.yesProb
             const np = parseFloat((100 - yp).toFixed(1))
@@ -284,26 +273,6 @@ function GroupedMarketCard({ group, selections, onSelect }) {
               </div>
             )
           })}
-        </div>
-
-        {/* Scroll button on right — shows if more outcomes exist */}
-        {hasMore && (
-          <button
-            onClick={() => setShowAll(v => !v)}
-            style={{
-              width: '28px', flexShrink: 0, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
-              borderRadius: '8px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center',
-              justifyContent: 'center', gap: '3px', padding: '6px 0', transition: 'all 0.14s',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)' }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)' }}
-            title={showAll ? 'Show less' : `${group.outcomes.length - 2} more options`}
-          >
-            <span style={{ fontSize: '10px', color: '#888', writingMode: 'vertical-rl', textOrientation: 'mixed', letterSpacing: '0.03em', fontFamily: 'var(--font)', fontWeight: 600 }}>
-              {showAll ? '▲ less' : `+${group.outcomes.length - 2} more`}
-            </span>
-          </button>
-        )}
       </div>
 
       {/* Footer */}
