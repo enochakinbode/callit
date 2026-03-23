@@ -190,8 +190,8 @@ function GroupedMarketCard({ group, selections, onSelect }) {
 
       <p style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text)', lineHeight: 1.45, margin: 0 }}>{group.title}</p>
 
-      {/* Outcomes — each is a row with label + prob + YES/NO */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '260px', overflowY: 'auto' }}>
+      {/* Outcomes — show 3 visible, scroll for more */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '168px', overflowY: 'auto', paddingRight: '2px' }}>
         {group.outcomes.map(outcome => {
           const yp = liveProbs[outcome.id] || outcome.yesProb
           const np = parseFloat((100 - yp).toFixed(1))
