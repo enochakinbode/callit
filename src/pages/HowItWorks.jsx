@@ -225,7 +225,7 @@ export default function HowItWorks() {
               { label: 'Gas fees', value: 'Base gas', note: 'Standard Base network fee, usually below $0.01' },
               { label: 'With Tempo (coming)', value: 'Fixed + stable', note: 'No gas spikes predictable fee every time' },
             ].map((row, i, arr) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: i < arr.length  1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
                 <div>
                   <div style={{ fontSize: '14px', fontWeight: 600, color: '#DDD' }}>{row.label}</div>
                   <div style={{ fontSize: '12px', color: '#555', marginTop: '2px' }}>{row.note}</div>
