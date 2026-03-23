@@ -87,5 +87,76 @@ export const MULTI_ADMIN_MARKETS = [
   { id:19, category:'Economy',      description:'US inflation drops below 2.5% by Dec 31, 2026',                   yesProb:52, noProb:48, endDate:'Dec 31, 2026', endTime:'11:59 PM EST',  volume:'$19,700', bettors:241 },
   { id:20, category:'Social Media', description:'TikTok remains operational in the US through Dec 31, 2026',       yesProb:71, noProb:29, endDate:'Dec 31, 2026', endTime:'11:59 PM EST',  volume:'$22,300', bettors:298 },
   { id:21, category:'Tech',         description:'OpenAI releases GPT-5 publicly before Jun 30, 2026',              yesProb:67, noProb:33, endDate:'Jun 30, 2026', endTime:'11:59 PM UTC',  volume:'$31,500', bettors:445 },
-  { id:22, category:'Tech',         description:'Apple launches a foldable iPhone by Dec 31, 2026',                yesProb:22, noProb:78, endDate:'Dec 31, 2026', endTime:'11:59 PM PST',  volume:'$14,800', bettors:192 },
+  { id:22, category:'Tech',         description:'Apple launches a foldable iPhone by Dec 31, 2026',                yesProb:22, noProb:78, endDate:'Dec 31, 2026', endTime:'11:59 PM PST',  volume:'$14,800', bettors:192, frequency:'One-time', isNew:false },
+]
+
+// Grouped multi-outcome markets (multiple options on one event — like Polymarket)
+// Each outcome is independently bettable YES/NO
+export const GROUPED_MARKETS = [
+  {
+    id: 'grp-1',
+    title: 'How many tweets will Elon Musk post this week?',
+    category: 'Social Media',
+    frequency: 'Weekly',
+    isNew: true,
+    volume: '$185K',
+    endDate: 'Mar 30, 2026',
+    endTime: '11:59 PM UTC',
+    outcomes: [
+      { id: 'grp-1-a', label: '115+',    yesProb: 22, noProb: 78 },
+      { id: 'grp-1-b', label: '90–114',  yesProb: 30, noProb: 70 },
+      { id: 'grp-1-c', label: '65–89',   yesProb: 28, noProb: 72 },
+      { id: 'grp-1-d', label: '40–64',   yesProb: 14, noProb: 86 },
+      { id: 'grp-1-e', label: 'Under 40', yesProb: 6,  noProb: 94 },
+    ],
+  },
+  {
+    id: 'grp-2',
+    title: 'Who wins the 2026 NBA Championship?',
+    category: 'Sports',
+    frequency: 'One-time',
+    isNew: false,
+    volume: '$920K',
+    endDate: 'Jun 20, 2026',
+    endTime: '11:00 PM UTC',
+    outcomes: [
+      { id: 'grp-2-a', label: 'Boston Celtics',  yesProb: 28, noProb: 72 },
+      { id: 'grp-2-b', label: 'Oklahoma City',   yesProb: 22, noProb: 78 },
+      { id: 'grp-2-c', label: 'Cleveland Cavs',  yesProb: 18, noProb: 82 },
+      { id: 'grp-2-d', label: 'Denver Nuggets',  yesProb: 14, noProb: 86 },
+      { id: 'grp-2-e', label: 'Other team',      yesProb: 18, noProb: 82 },
+    ],
+  },
+  {
+    id: 'grp-3',
+    title: 'BTC price range end of April 2026?',
+    category: 'Crypto',
+    frequency: 'Monthly',
+    isNew: true,
+    volume: '$340K',
+    endDate: 'Apr 30, 2026',
+    endTime: '11:59 PM UTC',
+    outcomes: [
+      { id: 'grp-3-a', label: '$120K+',        yesProb: 15, noProb: 85 },
+      { id: 'grp-3-b', label: '$100K–$120K',   yesProb: 32, noProb: 68 },
+      { id: 'grp-3-c', label: '$80K–$100K',    yesProb: 38, noProb: 62 },
+      { id: 'grp-3-d', label: 'Under $80K',    yesProb: 15, noProb: 85 },
+    ],
+  },
+  {
+    id: 'grp-4',
+    title: 'Which country wins most gold at 2026 Winter Olympics?',
+    category: 'Sports',
+    frequency: 'One-time',
+    isNew: false,
+    volume: '$210K',
+    endDate: 'Feb 28, 2026',
+    endTime: '11:59 PM UTC',
+    outcomes: [
+      { id: 'grp-4-a', label: 'Norway',   yesProb: 35, noProb: 65 },
+      { id: 'grp-4-b', label: 'USA',      yesProb: 28, noProb: 72 },
+      { id: 'grp-4-c', label: 'Germany',  yesProb: 18, noProb: 82 },
+      { id: 'grp-4-d', label: 'Other',    yesProb: 19, noProb: 81 },
+    ],
+  },
 ]
