@@ -54,29 +54,29 @@ export default function HowItWorks() {
         </div>
 
         {/* P2P */}
-        <Section title="⚔️ P2P Markets — Step by Step">
+        <Section title="⚔️ P2P Markets Step by Step">
           <Step n="1" title="Creator creates a market"
-            desc='Write a clear statement like "ETH will enter $4,000 by April 30, 2026 at 2:00 PM UTC." Stake USDC on your position. Set resolution type — Auto (Chainlink oracle) or Manual (admin).'
+            desc='Write a clear statement like "ETH will enter $4,000 by April 30, 2026 at 2:00 PM UTC." Stake USDC on your position. Set resolution type Auto (Chainlink oracle) or Manual (admin).'
             note="Every market shows exact date and time of expiry. No ambiguity at settlement."
           />
           <Step n="2" title="Acceptor takes the opposite side"
-            desc="The card shows the acceptor's counter-statement clearly. If creator says ETH WILL enter $4k — acceptor sees: you are betting ETH will NOT enter $4k. One button only: CALL IT."
+            desc="The card shows the acceptor's counter-statement clearly. If creator says ETH WILL enter $4k acceptor sees: you are betting ETH will NOT enter $4k. One button only: CALL IT."
             note="Acceptor stakes the exact same amount as creator. Pool = 2× creator stake. 50/50 always."
           />
-          <Step n="3" title="How odds work — ¢ pricing"
-            desc="Odds are shown in cents (¢). 50¢ YES means you pay 50 cents per $1 payout — which equals a 50% probability. Since P2P stakes are always equal, both sides are always 50¢."
+          <Step n="3" title="How odds work ¢ pricing"
+            desc="Odds are shown in cents (¢). 50¢ YES means you pay 50 cents per $1 payout which equals a 50% probability. Since P2P stakes are always equal, both sides are always 50¢."
           />
           <Step n="4" title="Resolution"
             desc="Auto markets (⚡) resolve via Chainlink oracle the moment the expiry date arrives. Manual markets (🛡) are resolved by admin after verifying results from official sources."
             note="Manual resolution notice: Admin resolves within 24 hours after market expiry date and time."
           />
           <Step n="5" title="Payout"
-            desc="Winner receives 98% of the total pool. 2% goes to the platform automatically. No manual claiming — smart contract handles it."
+            desc="Winner receives 98% of the total pool. 2% goes to the platform automatically. No manual claiming smart contract handles it."
           />
         </Section>
 
         {/* Multi */}
-        <Section title="🎯 Multi Markets — Step by Step">
+        <Section title="🎯 Multi Markets Step by Step">
           <Step n="1" title="Browse admin-created markets"
             desc="Callit admins create curated markets across Crypto, Politics, Sports, Economy, Social Media, and Tech. Every market shows exact expiry date and time in your local timezone."
           />
@@ -87,7 +87,7 @@ export default function HowItWorks() {
             desc="All individual probabilities multiply together. Example: 65¢ × 72¢ × 55¢ = 25.7¢ combined. The lower the combined odds, the bigger your potential payout."
           />
           <Step n="4" title="Stake and confirm in wallet"
-            desc="Enter your USDC stake. Potential payout shown in real time. Click CALL IT — your wallet asks for signature confirmation. Funds deducted only after you confirm."
+            desc="Enter your USDC stake. Potential payout shown in real time. Click CALL IT your wallet asks for signature confirmation. Funds deducted only after you confirm."
             note="You can browse markets and calculate potential payouts without connecting a wallet. Connect only when ready to bet."
           />
           <Step n="5" title="Win or lose"
@@ -128,7 +128,7 @@ export default function HowItWorks() {
         </Section>
 
         {/* ── TEMPO SECTION ── */}
-        <Section title="⚡ Tempo — Instant Settlement (Coming Soon)">
+        <Section title="⚡ Tempo Instant Settlement (Coming Soon)">
           <div style={{
             background: 'linear-gradient(135deg, rgba(232,184,75,0.06) 0%, rgba(96,165,250,0.06) 100%)',
             border: '1px solid rgba(232,184,75,0.2)',
@@ -136,12 +136,12 @@ export default function HowItWorks() {
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
               <div style={{ background: 'rgba(232,184,75,0.12)', border: '1px solid rgba(232,184,75,0.25)', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', fontWeight: 800, color: 'var(--gold)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                ⚡ TEMPO MAINNET — LIVE
+                ⚡ TEMPO MAINNET LIVE
               </div>
               <div style={{ fontSize: '12px', color: '#555' }}>Built by Paradigm + Stripe</div>
             </div>
             <p style={{ fontSize: '14px', color: '#999', lineHeight: 1.7, marginBottom: '0' }}>
-              Tempo is a payment-optimized blockchain designed for instant settlement, predictable low fees, and AI agent support via the Machine Payments Protocol (MPP). Callit is upgrading to Tempo so every market settles automatically — no human cashier, no delay.
+              Tempo is a payment-optimized blockchain designed for instant settlement, predictable low fees, and AI agent support via the Machine Payments Protocol (MPP). Callit is upgrading to Tempo so every market settles automatically no human cashier, no delay.
             </p>
           </div>
 
@@ -153,7 +153,7 @@ export default function HowItWorks() {
                 'Chelsea game ends',
                 'Someone manually triggers settlement',
                 'Winner claims their money',
-                'Done — humans involved at every step',
+                'Done humans involved at every step',
               ].map((s, i) => (
                 <div key={i} style={{ display: 'flex', gap: '10px', marginBottom: '10px', alignItems: 'flex-start' }}>
                   <span style={{ color: '#555', fontWeight: 800, flexShrink: 0, fontSize: '13px' }}>{i + 1}.</span>
@@ -223,9 +223,9 @@ export default function HowItWorks() {
               { label: 'Platform fee', value: '2%', note: 'Deducted from winner\'s payout only' },
               { label: 'Loser pays', value: '0%', note: 'Losing stake goes entirely to the winner' },
               { label: 'Gas fees', value: 'Base gas', note: 'Standard Base network fee, usually below $0.01' },
-              { label: 'With Tempo (coming)', value: 'Fixed + stable', note: 'No gas spikes — predictable fee every time' },
+              { label: 'With Tempo (coming)', value: 'Fixed + stable', note: 'No gas spikes predictable fee every time' },
             ].map((row, i, arr) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: i < arr.length  1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
                 <div>
                   <div style={{ fontSize: '14px', fontWeight: 600, color: '#DDD' }}>{row.label}</div>
                   <div style={{ fontSize: '12px', color: '#555', marginTop: '2px' }}>{row.note}</div>

@@ -3,8 +3,11 @@ import { useAccount } from 'wagmi'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { shortAddr } from '../lib/config'
 
-// Mock — production: fetch from contract events / subgraph filtered by wallet
-const MOCK_HISTORY = [
+// Production: fetch from contract events / subgraph filtered by connected wallet
+// For now showing empty — no fake data for new users
+const MOCK_HISTORY = [] // will be populated from on-chain events
+
+const MOCK_HISTORY_DISABLED = [
   { id: 1,  type: 'P2P',   side: 'NO',  description: 'ETH will enter $4,000 by April 30, 2026 at 11:59 PM UTC',                         category: 'Crypto',       status: 'Active',  stake: 65,   payout: 127.40, date: 'Mar 20, 2026', expiry: 'Apr 30, 2026', resType: 'auto',   counterparty: '0x742d...ABCD', result: null    },
   { id: 2,  type: 'P2P',   side: 'NO',  description: 'BTC will reach $100,000 before June 30, 2026 at 11:59 PM UTC',                    category: 'Crypto',       status: 'Matched', stake: 100,  payout: 196.00, date: 'Mar 18, 2026', expiry: 'Jun 30, 2026', resType: 'auto',   counterparty: '0x3dc5...55b',  result: null    },
   { id: 3,  type: 'Multi', side: 'YES', description: 'ETH $4k + BTC $100k + Base TVL $10B — 3-leg accumulator',                        category: 'Crypto',       status: 'Active',  stake: 50,   payout: 412.00, date: 'Mar 15, 2026', expiry: 'Jun 30, 2026', resType: 'mixed',  counterparty: 'Admin',         result: null    },
@@ -44,7 +47,7 @@ export default function StakeHistory() {
   const [sortBy, setSort]     = useState('newest')
 
   const filtered = useMemo(() => {
-    let list = MOCK_HISTORY
+    let list = MOCK_HISTORY // empty until on-chain data connected
     if (search)       list = list.filter(b => b.description.toLowerCase().includes(search.toLowerCase()))
     if (status !== 'All') list = list.filter(b => b.status === status)
     if (type !== 'All')   list = list.filter(b => b.type === type)

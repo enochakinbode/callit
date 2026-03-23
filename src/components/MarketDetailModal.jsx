@@ -180,12 +180,7 @@ const SEED_COMMENTS = [
   { id: 4, user: '0x23Cd...45Ab', avatar: '🐊', text: 'Same pattern as the last 3 similar markets. Always resolves NO.', time: '1d ago', likes: 21, liked: false },
 ]
 
-const SEED_ACTIVITY = [
-  { user: '0xA1b2...C3d4', avatar: '🦊', action: 'Bought YES', amount: '$500', time: '3m ago', color: 'var(--yes-color)' },
-  { user: '0xDe45...Fa67', avatar: '🐻', action: 'Bought NO', amount: '$200', time: '8m ago', color: 'var(--no-color)' },
-  { user: '0xBc89...01Ef', avatar: '🦈', action: 'Bought YES', amount: '$1,200', time: '22m ago', color: 'var(--yes-color)' },
-  { user: '0x23Cd...45Ab', avatar: '🐊', action: 'Sold NO', amount: '$400', time: '1h ago', color: 'var(--no-color)' },
-]
+const SEED_ACTIVITY = [] // no fake activity — will come from on-chain events
 
 function CommentsActivity() {
   const { address, isConnected } = useAccount()

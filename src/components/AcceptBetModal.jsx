@@ -334,6 +334,19 @@ export default function AcceptBetModal({ bet, onClose, onSuccess }) {
           <div style={{ fontSize: '11px', color: '#444', marginTop: '8px' }}>98% payout · 2% fee deducted from winner</div>
         </div>
 
+        {/* Suspicious Transaction explanation — shown before user confirms */}
+        <div style={{ background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.18)', borderRadius: '10px', padding: '12px 14px', marginBottom: '16px' }}>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+            <span style={{ fontSize: '16px', flexShrink: 0 }}>⚠️</span>
+            <div>
+              <div style={{ fontSize: '12px', fontWeight: 700, color: '#fbbf24', marginBottom: '4px' }}>Your wallet may show "Suspicious Transaction"</div>
+              <p style={{ fontSize: '12px', color: '#888', lineHeight: 1.6, margin: 0 }}>
+                This is normal for USDC approval on new contracts. We are only approving the exact amount you are staking (${creatorStakeUSDC} USDC) — not your entire wallet. Callit only ever touches this specific amount.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Manual warning */}
         {isManual && (
           <div style={{ background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.18)', borderRadius: '8px', padding: '10px 14px', marginBottom: '16px', fontSize: '12px', color: '#fbbf24', lineHeight: 1.5 }}>
@@ -374,7 +387,7 @@ export default function AcceptBetModal({ bet, onClose, onSuccess }) {
               className={`btn ${side === 'YES' ? 'btn-yes' : 'btn-no'}`}
               onClick={handleConfirm}
               disabled={isLoading}
-              style={{ flex: 2, fontWeight: 800, fontSize: '15px' }}
+              style={{ flex: 2, fontWeight: 800, fontSize: '14px', whiteSpace: 'normal', lineHeight: 1.3, padding: '12px 10px', textAlign: 'center' }}
             >
               {isLoading ? <><span className="spinner" /> {btnLabel()}</> : btnLabel()}
             </button>
