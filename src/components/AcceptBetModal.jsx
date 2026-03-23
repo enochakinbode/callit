@@ -48,8 +48,8 @@ function LiveChart({ baseProb, seed, side }) {
     return () => clearInterval(t)
   }, [period])
 
-  const W = 600, H = 160
-  const pad = { t: 16, b: 24, l: 8, r: 40 }
+  const W = 600, H = 110
+  const pad = { t: 10, b: 18, l: 8, r: 36 }
   const cW = W - pad.l - pad.r, cH = H - pad.t - pad.b
   const maxV = Math.max(...data), minV = Math.min(...data)
   const range = maxV - minV || 1
@@ -73,8 +73,8 @@ function LiveChart({ baseProb, seed, side }) {
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '10px' }}>
-        <span style={{ fontSize: '28px', fontWeight: 900, color, letterSpacing: '-0.02em' }}>{displayVal.toFixed(0)}%</span>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '6px' }}>
+        <span style={{ fontSize: '22px', fontWeight: 900, color, letterSpacing: '-0.02em' }}>{displayVal.toFixed(0)}%</span>
         <span style={{ fontSize: '13px', fontWeight: 700, color: parseFloat(change) >= 0 ? 'var(--yes-color)' : 'var(--no-color)' }}>
           {parseFloat(change) >= 0 ? '▲' : '▼'} {Math.abs(parseFloat(change))}%
         </span>
@@ -152,7 +152,7 @@ function StakerChat({ bet, isCreator }) {
       <div style={{ fontSize: '12px', fontWeight: 700, color: '#666', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px' }}>
         💬 Staker Discussion
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '10px', maxHeight: '140px', overflowY: 'auto' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '10px', maxHeight: '100px', overflowY: 'auto' }}>
         {msgs.map(m => {
           const isMe = isCreator ? m.role === 'creator' : m.role === 'acceptor'
           return (
@@ -282,18 +282,18 @@ export default function AcceptBetModal({ bet, onClose, onSuccess }) {
     >
       <div
         onClick={e => e.stopPropagation()}
-        style={{ background: '#0A0A0A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '20px', width: '100%', maxWidth: '580px', margin: '0 auto', padding: '24px 20px', animation: 'slideUp 0.25s ease' }}
+        style={{ background: '#0A0A0A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', width: '100%', maxWidth: '520px', margin: '0 auto', padding: '16px', animation: 'slideUp 0.22s ease' }}
       >
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h2 style={{ fontSize: '18px', fontWeight: 800, margin: 0 }}>Confirm Your Call</h2>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+          <h2 style={{ fontSize: '16px', fontWeight: 800, margin: 0 }}>Confirm Your Call</h2>
           <button onClick={onClose} disabled={isLoading} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '6px 12px', color: '#888', cursor: 'pointer', fontSize: '16px', fontFamily: 'var(--font)' }}>✕</button>
         </div>
 
         {/* 1. Creator says */}
-        <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '14px', marginBottom: '10px' }}>
+        <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '10px', marginBottom: '8px' }}>
           <div style={{ fontSize: '10px', color: '#555', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: '6px' }}>Creator Says</div>
-          <p style={{ fontSize: '14px', fontWeight: 600, color: '#FFF', lineHeight: 1.55, margin: 0 }}>{bet.description}</p>
+          <p style={{ fontSize: '13px', fontWeight: 600, color: '#FFF', lineHeight: 1.45, margin: 0 }}>{bet.description}</p>
           <div style={{ fontSize: '11px', color: '#555', marginTop: '6px' }}>🕐 {resDateStr} · {resTimeStr} UTC</div>
         </div>
 
@@ -301,25 +301,25 @@ export default function AcceptBetModal({ bet, onClose, onSuccess }) {
         <div style={{
           background: side === 'YES' ? 'rgba(38,161,123,0.08)' : 'rgba(232,93,93,0.08)',
           border: `1px solid ${side === 'YES' ? 'rgba(38,161,123,0.3)' : 'rgba(232,93,93,0.3)'}`,
-          borderRadius: '10px', padding: '14px', marginBottom: '20px',
+          borderRadius: '8px', padding: '10px', marginBottom: '12px',
         }}>
           <div style={{ fontSize: '10px', color: side === 'YES' ? 'var(--yes-color)' : 'var(--no-color)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: '6px' }}>
             Your Position — {side}
           </div>
-          <p style={{ fontSize: '14px', fontWeight: 700, color: side === 'YES' ? 'var(--yes-color)' : 'var(--no-color)', lineHeight: 1.55, margin: 0 }}>
+          <p style={{ fontSize: '13px', fontWeight: 700, color: side === 'YES' ? 'var(--yes-color)' : 'var(--no-color)', lineHeight: 1.45, margin: 0 }}>
             {getCounterStatement()}
           </p>
         </div>
 
         {/* 3. Live chart */}
-        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '16px', marginBottom: '20px' }}>
-          <div style={{ fontSize: '11px', color: '#555', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: '12px' }}>Live Probability Chart</div>
+        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px', padding: '10px 12px', marginBottom: '12px' }}>
+          <div style={{ fontSize: '10px', color: '#555', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: '8px' }}>Live Probability Chart</div>
           <LiveChart baseProb={50} seed={seed} side={side} />
         </div>
 
         {/* 4. Stake details */}
-        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px', padding: '14px', marginBottom: '16px' }}>
-          <div style={{ fontSize: '11px', color: '#555', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: '12px' }}>Stake Summary</div>
+        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', padding: '10px 12px', marginBottom: '10px' }}>
+          <div style={{ fontSize: '10px', color: '#555', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: '8px' }}>Stake Summary</div>
           {[
             { label: 'You stake', value: `$${creatorStakeUSDC} USDC`, color: side === 'NO' ? 'var(--no-color)' : 'var(--yes-color)' },
             { label: 'Creator staked', value: `$${creatorStakeUSDC} USDC`, color: 'var(--yes-color)' },
@@ -362,13 +362,13 @@ export default function AcceptBetModal({ bet, onClose, onSuccess }) {
 
         {/* Manual warning */}
         {isManual && (
-          <div style={{ background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.18)', borderRadius: '8px', padding: '10px 14px', marginBottom: '16px', fontSize: '12px', color: '#fbbf24', lineHeight: 1.5 }}>
+          <div style={{ background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.18)', borderRadius: '6px', padding: '7px 10px', marginBottom: '10px', fontSize: '11px', color: '#fbbf24', lineHeight: 1.4 }}>
             🛡 Manual resolution — admin settles within 24h after expiry
           </div>
         )}
 
         {/* 5. Staker chat */}
-        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '14px', marginBottom: '20px' }}>
+        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', padding: '10px 12px', marginBottom: '12px' }}>
           <StakerChat bet={bet} isCreator={false} />
         </div>
 

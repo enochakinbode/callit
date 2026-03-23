@@ -45,8 +45,8 @@ function Chart({ baseProb, seed }) {
     return () => clearInterval(t)
   }, [period])
 
-  const W = 700, H = 200
-  const pad = { t: 16, b: 24, l: 8, r: 42 }
+  const W = 600, H = 130
+  const pad = { t: 10, b: 18, l: 6, r: 36 }
   const cW = W - pad.l - pad.r, cH = H - pad.t - pad.b
   const maxV = Math.max(...data), minV = Math.min(...data)
   const range = maxV - minV || 1
@@ -71,8 +71,8 @@ function Chart({ baseProb, seed }) {
   return (
     <div>
       {/* Current value */}
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '10px' }}>
-        <span style={{ fontSize: '32px', fontWeight: 900, color, letterSpacing: '-0.02em' }}>{dv.toFixed(0)}%</span>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginBottom: '6px' }}>
+        <span style={{ fontSize: '22px', fontWeight: 900, color, letterSpacing: '-0.02em' }}>{dv.toFixed(0)}%</span>
         <span style={{ fontSize: '13px', fontWeight: 700, color: isUp ? 'var(--yes-color)' : 'var(--no-color)' }}>
           {isUp ? '▲' : '▼'} {Math.abs(parseFloat(change))}%
         </span>
@@ -137,7 +137,7 @@ function OrderBook({ prob, seed }) {
   }
 
   return (
-    <div style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', overflow: 'hidden', marginBottom: '24px' }}>
+    <div style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', overflow: 'hidden', marginBottom: '14px' }}>
       <button onClick={() => setOpen(v => !v)} style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '13px 16px', background: 'rgba(255,255,255,0.02)', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)' }}>
         <span style={{ fontSize: '14px', fontWeight: 700, color: '#FFF' }}>Order Book</span>
         <span style={{ color: '#555', fontSize: '13px' }}>{open ? '▲' : '▼'}</span>
@@ -293,10 +293,10 @@ export default function MarketDetailModal({ market, onClose, onCallIt }) {
 
   return (
     <div onClick={e => e.target === e.currentTarget && onClose()} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.88)', backdropFilter: 'blur(8px)', zIndex: 2000, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '20px 16px' }}>
-      <div onClick={e => e.stopPropagation()} style={{ background: '#0A0A0A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '20px', width: '100%', maxWidth: '760px', margin: '0 auto', padding: '24px 20px', animation: 'slideUp 0.22s ease' }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: '#0A0A0A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', width: '100%', maxWidth: '580px', margin: '0 auto', padding: '16px', animation: 'slideUp 0.2s ease' }}>
 
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', marginBottom: '14px' }}>
           <div style={{ flex: 1 }}>
             <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '10px' }}>
               <span className={`badge ${market.category === 'Crypto' ? 'badge-gold' : market.category === 'Sports' ? 'badge-green' : market.category === 'Politics' ? 'badge-blue' : 'badge-gray'}`}>{market.category || 'Market'}</span>
@@ -305,7 +305,7 @@ export default function MarketDetailModal({ market, onClose, onCallIt }) {
                 <span className={`badge ${market.resType === 'auto' ? 'badge-auto' : 'badge-manual'}`}>{market.resType === 'auto' ? '⚡ AUTO' : '🛡 MANUAL'}</span>
               )}
             </div>
-            <h2 style={{ fontSize: 'clamp(15px, 2.5vw, 19px)', fontWeight: 800, color: '#FFF', lineHeight: 1.4, margin: 0 }}>{desc}</h2>
+            <h2 style={{ fontSize: '14px', fontWeight: 800, color: '#FFF', lineHeight: 1.4, margin: 0 }}>{desc}</h2>
           </div>
           <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '6px 12px', color: '#888', cursor: 'pointer', fontSize: '16px', fontFamily: 'var(--font)', flexShrink: 0 }}>✕</button>
         </div>
@@ -325,7 +325,7 @@ export default function MarketDetailModal({ market, onClose, onCallIt }) {
         </div>
 
         {/* Chart */}
-        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '16px', marginBottom: '20px' }}>
+        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px', padding: '10px 12px', marginBottom: '14px' }}>
           <Chart baseProb={baseProb} seed={seed} />
         </div>
 
@@ -333,7 +333,7 @@ export default function MarketDetailModal({ market, onClose, onCallIt }) {
         <OrderBook prob={baseProb} seed={seed} />
 
         {/* Rules */}
-        <div style={{ marginBottom: '24px' }}>
+        <div style={{ marginBottom: '14px' }}>
           <div style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', marginBottom: '12px', paddingBottom: '10px' }}>
             <span style={{ fontSize: '14px', fontWeight: 700, color: '#FFF', borderBottom: '2px solid var(--gold)', paddingBottom: '10px' }}>Rules</span>
           </div>
@@ -352,7 +352,7 @@ export default function MarketDetailModal({ market, onClose, onCallIt }) {
 
         {/* CALL IT — only for P2P markets */}
         {isP2P && (market.status === 'Open' || market.status === 0) && (
-          <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+          <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
             <div style={{ background: acceptorSide === 'YES' ? 'rgba(38,161,123,0.06)' : 'rgba(232,93,93,0.06)', border: `1px solid ${acceptorSide === 'YES' ? 'rgba(38,161,123,0.2)' : 'rgba(232,93,93,0.2)'}`, borderRadius: '10px', padding: '12px 16px', marginBottom: '12px' }}>
               <div style={{ fontSize: '10px', color: acceptorSide === 'YES' ? 'var(--yes-color)' : 'var(--no-color)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em', marginBottom: '4px' }}>You are saying</div>
               <p style={{ fontSize: '13px', fontWeight: 600, color: acceptorSide === 'YES' ? 'var(--yes-color)' : 'var(--no-color)', margin: 0 }}>
@@ -373,7 +373,7 @@ export default function MarketDetailModal({ market, onClose, onCallIt }) {
 
         {/* Multi — just a note, betting is done on the card */}
         {!isP2P && (
-          <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.06)', textAlign: 'center' }}>
+          <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px solid rgba(255,255,255,0.06)', textAlign: 'center' }}>
             <p style={{ fontSize: '13px', color: '#666', marginBottom: '12px' }}>Select YES or NO directly on the market card to add to your bet slip.</p>
             <button onClick={onClose} className="btn btn-outline btn-lg" style={{ width: '100%' }}>Back to Markets →</button>
           </div>
