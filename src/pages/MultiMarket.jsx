@@ -408,8 +408,6 @@ export default function MultiMarket() {
     return `CALL IT — ${selCount > 1 ? selCount + '-Leg' : 'Single'} →`
   }
 
-  }
-
   return (
     <div className="page">
       <div className="container" style={{ paddingTop: '32px', paddingBottom: '60px' }}>
