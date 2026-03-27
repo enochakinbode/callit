@@ -1,10 +1,15 @@
 import { useState, useEffect, useMemo } from 'react'
-import { useAccount } from 'wagmi'
+import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
+import { parseAbi } from 'viem'
 import { useToast } from '../context/ToastContext'
 import { MULTI_ADMIN_MARKETS, GROUPED_MARKETS } from '../data/markets'
 import MarketDetailModal from '../components/MarketDetailModal'
-import { MIN_STAKE_USDC, MAX_STAKE_USDC } from '../lib/config'
+import { MIN_STAKE_USDC, MAX_STAKE_USDC, ACTIVE_CHAIN, parseUSDC } from '../lib/config'
+
+// Contract ABIs
+const ERC20_ABI = parseAbi(['function approve(address spender, uint256 amount) returns (bool)'])
+const FACTORY_ABI = parseAbi(['function createMultiBet(uint256[] calldata legIds, uint256 creatorStake, uint8 token, uint256 resolutionTime) returns (uint256)'])
 
 const CATEGORIES = ['All', 'Crypto', 'Sports', 'Politics', 'Economy', 'Social Media', 'Tech']
 const sr = (seed, i) => ((seed * 9301 + i * 49297 + 233) % 233280) / 233280
@@ -293,7 +298,6 @@ export default function MultiMarket() {
   const [category, setCategory] = useState('All')
   const [selections, setSelections] = useState({})
   const [stake, setStake] = useState('')
-  const [loading, setLoading] = useState(false)
   const [search, setSearch] = useState('')
 
   const filteredMarkets = useMemo(() => MULTI_ADMIN_MARKETS.filter(m =>
@@ -337,22 +341,73 @@ export default function MultiMarket() {
     })
   }
 
-  const handleCallIt = async () => {
-    if (loading) return
+  // Real wallet transaction flow
+  const { writeContract: approveWrite, data: approveTxHash, isPending: approvePending, error: approveErr } = useWriteContract()
+  const { writeContract: betWrite, data: betTxHash, isPending: betPending, error: betErr } = useWriteContract()
+  const { isSuccess: approveConfirmed } = useWaitForTransactionReceipt({ hash: approveTxHash })
+  const { isSuccess: betConfirmed, error: betReceiptErr } = useWaitForTransactionReceipt({ hash: betTxHash })
+  const [txStep, setTxStep] = useState('idle')
+
+  useEffect(() => {
+    if (approveConfirmed && txStep === 'approving') {
+      setTxStep('betting')
+      const stakeAmount = parseUSDC(stakeNum)
+      const legIds = selectedList.map((_, i) => BigInt(i))
+      const resTime = BigInt(Math.floor(Date.now() / 1000) + 86400 * 90)
+      betWrite({
+        address: ACTIVE_CHAIN.factory,
+        abi: FACTORY_ABI,
+        functionName: 'createMultiBet',
+        args: [legIds, stakeAmount, BigInt(0), resTime],
+      })
+    }
+  }, [approveConfirmed]) // eslint-disable-line
+
+  useEffect(() => {
+    if (betConfirmed && txStep === 'betting') {
+      setTxStep('done')
+      addToast(`${selCount > 1 ? selCount + '-Leg' : 'Single'} bet placed!`, 'success')
+      setSelections({})
+      setStake('')
+      setTimeout(() => setTxStep('idle'), 2000)
+    }
+  }, [betConfirmed]) // eslint-disable-line
+
+  useEffect(() => {
+    const err = approveErr || betErr || betReceiptErr
+    if (err && txStep !== 'idle' && txStep !== 'done') {
+      const msg = err.message?.includes('rejected') ? 'Transaction cancelled' : err.shortMessage || err.message || 'Transaction failed'
+      addToast(msg, 'error')
+      setTxStep('idle')
+    }
+  }, [approveErr, betErr, betReceiptErr]) // eslint-disable-line
+
+  const isTxLoading = txStep !== 'idle' && txStep !== 'done'
+
+  const handleCallIt = () => {
+    if (isTxLoading) return
     if (!isConnected) { openConnectModal(); return }
     if (selCount < 1) { addToast('Select at least 1 market', 'error'); return }
     if (!stakeNum || stakeNum < MIN_STAKE_USDC) { addToast(`Min stake is ${MIN_STAKE_USDC} USDC`, 'error'); return }
-    setLoading(true)
-    try {
-      await new Promise(r => setTimeout(r, 1400))
-      addToast(`${selCount > 1 ? selCount + '-Leg' : 'Single'} market placed!`, 'success')
-      setSelections({})
-      setStake('')
-    } catch (err) {
-      addToast(err.message || 'Transaction failed', 'error')
-    } finally {
-      setLoading(false)
-    }
+    if (stakeNum > MAX_STAKE_USDC) { addToast(`Max stake is ${MAX_STAKE_USDC.toLocaleString()} USDC`, 'error'); return }
+    setTxStep('approving')
+    approveWrite({
+      address: ACTIVE_CHAIN.tokens.USDC,
+      abi: ERC20_ABI,
+      functionName: 'approve',
+      args: [ACTIVE_CHAIN.factory, parseUSDC(stakeNum)],
+    })
+  }
+
+  const btnLabel = () => {
+    if (approvePending || txStep === 'approving') return 'Check your wallet...'
+    if (betPending || txStep === 'betting') return 'Confirming bet...'
+    if (txStep === 'done') return 'Bet placed!'
+    if (!isConnected) return 'Connect to Bet'
+    if (selCount < 1) return 'Select a market'
+    return `CALL IT — ${selCount > 1 ? selCount + '-Leg' : 'Single'} →`
+  }
+
   }
 
   return (
@@ -465,13 +520,10 @@ export default function MultiMarket() {
                 <button
                   className="btn btn-gold"
                   style={{ width: '100%', marginTop: '10px', fontWeight: 800, fontSize: '14px' }}
-                  onClick={isConnected ? handleCallIt : openConnectModal}
-                  disabled={loading || (isConnected && selCount < 1)}
+                  onClick={handleCallIt}
+                  disabled={isTxLoading || (isConnected && selCount < 1)}
                 >
-                  {loading ? <><span className="spinner" /> Confirming...</>
-                    : !isConnected ? 'Connect to Bet'
-                    : selCount < 1 ? 'Select a market'
-                    : `CALL IT — ${selCount > 1 ? selCount + '-Leg' : 'Single'} →`}
+                  {isTxLoading ? <><span className="spinner" /> {btnLabel()}</> : btnLabel()}
                 </button>
               </div>
             </div>
