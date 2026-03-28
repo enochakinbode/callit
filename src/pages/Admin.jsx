@@ -98,6 +98,39 @@ export default function Admin() {
   const [creating, setCreating] = useState(false)
   const setMF = (k, v) => setMultiForm(p => ({ ...p, [k]: v }))
 
+  // Market Slip settings
+  const [maxSlipSize, setMaxSlipSize] = useState(10)
+  const [slipCategoryRules, setSlipCategoryRules] = useState({
+    Crypto: true, Sports: true, Politics: true, Economy: true, 'Social Media': true, Tech: true,
+  })
+
+  // Market on/off toggle (per market)
+  const [marketEnabled, setMarketEnabled] = useState(() =>
+    Object.fromEntries([...createdMultis, ...MULTI_ADMIN_MARKETS].map(m => [m.id, true]))
+  )
+  const toggleMarket = id => setMarketEnabled(prev => ({ ...prev, [id]: !prev[id] }))
+  const toggleCategory = cat => setSlipCategoryRules(prev => ({ ...prev, [cat]: !prev[cat] }))
+
+  // Edit multi market
+  const [editingMarket, setEditingMarket] = useState(null)
+  const [editForm, setEditForm] = useState({})
+  const setEF = (k, v) => setEditForm(p => ({ ...p, [k]: v }))
+
+  const startEdit = (m) => {
+    setEditingMarket(m.id)
+    setEditForm({ description: m.description, category: m.category, yesProb: String(m.yesProb), endDate: '', endTime: m.endTime || '23:59' })
+    setTab('create-multi')
+  }
+
+  const handleSaveEdit = () => {
+    if (!editForm.description.trim()) { addToast('Description required', 'error'); return }
+    setCreatedMultis(prev => prev.map(m => m.id === editingMarket ? { ...m, ...editForm, yesProb: +editForm.yesProb, noProb: 100 - +editForm.yesProb } : m))
+    setEditingMarket(null)
+    setEditForm({})
+    setTab('all-multi')
+    addToast('Market updated', 'success')
+  }
+
   // Polymarket import
   const [polySearch, setPolySearch] = useState('')
   const [polyResults, setPolyResults] = useState([])
@@ -324,6 +357,7 @@ export default function Admin() {
             { id: 'all-multi',    label: `🎯 Multi Markets (${filteredMulti.length})` },
             { id: 'create-multi', label: '➕ Create Market' },
             { id: 'import-poly', label: '📥 Import Polymarket' },
+            { id: 'slip-settings', label: '⚙️ Market Slip' },
           ].map(t => (
             <button key={t.id} className={`tab ${tab === t.id ? 'active' : ''}`} onClick={() => setTab(t.id)}>{t.label}</button>
           ))}
@@ -480,11 +514,11 @@ export default function Admin() {
 
             <div style={{ background: '#0D0D0D', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', overflowX: 'auto' }}>
               <div style={{ minWidth: '560px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '40px 1fr 80px 70px 80px 80px', gap: '10px', padding: '10px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', fontSize: '10px', color: '#555', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  <span>ID</span><span>Description</span><span>Category</span><span>YES%</span><span>Volume</span><span>Bettors</span>
+                <div style={{ display: 'grid', gridTemplateColumns: '40px 1fr 70px 60px 70px 120px', gap: '10px', padding: '10px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', fontSize: '10px', color: '#555', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  <span>ID</span><span>Description</span><span>Cat</span><span>YES%</span><span>Vol</span><span>Actions</span>
                 </div>
                 {filteredMulti.map((m, i) => (
-                  <div key={m.id} style={{ display: 'grid', gridTemplateColumns: '40px 1fr 80px 70px 80px 80px', gap: '10px', padding: '10px 16px', borderBottom: i < filteredMulti.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none', alignItems: 'center' }}>
+                  <div key={m.id} style={{ display: 'grid', gridTemplateColumns: '40px 1fr 70px 60px 70px 120px', gap: '10px', padding: '10px 16px', borderBottom: i < filteredMulti.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none', alignItems: 'center' }}>
                     <span style={{ fontSize: '11px', color: '#555', fontFamily: 'var(--mono)' }}>#{m.id}</span>
                     <div>
                       <div style={{ fontSize: '12px', color: '#DDD', lineHeight: 1.4, marginBottom: '2px' }}>{m.description}</div>
@@ -493,10 +527,61 @@ export default function Admin() {
                     <span><span className={`badge ${CAT_COLOR[m.category] || 'badge-gray'}`}>{m.category}</span></span>
                     <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--yes-color)', fontFamily: 'var(--mono)' }}>{m.yesProb}%</span>
                     <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--gold)', fontFamily: 'var(--mono)' }}>{m.volume || '$0'}</span>
-                    <span style={{ fontSize: '12px', color: '#888', fontFamily: 'var(--mono)' }}>{m.bettors || 0}</span>
+                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                      <button onClick={() => toggleMarket(m.id)} style={{ padding: '3px 10px', borderRadius: '99px', border: 'none', cursor: 'pointer', fontSize: '10px', fontWeight: 700, fontFamily: 'var(--font)', background: marketEnabled[m.id] !== false ? 'rgba(38,161,123,0.15)' : 'rgba(232,93,93,0.12)', color: marketEnabled[m.id] !== false ? 'var(--yes-color)' : 'var(--no-color)' }}>
+                        {marketEnabled[m.id] !== false ? 'ON' : 'OFF'}
+                      </button>
+                      <button onClick={() => startEdit(m)} style={{ padding: '3px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', cursor: 'pointer', fontSize: '10px', fontWeight: 600, color: 'var(--text-muted)', fontFamily: 'var(--font)' }}>
+                        Edit
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── MARKET SLIP SETTINGS ── */}
+        {tab === 'slip-settings' && (
+          <div style={{ maxWidth: '700px' }}>
+            <h2 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '20px' }}>Market Slip Settings</h2>
+
+            {/* Max markets in slip */}
+            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', marginBottom: '16px' }}>
+              <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text)', marginBottom: '12px' }}>Max markets per slip</div>
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <input className="input" type="number" min="1" max="10" value={maxSlipSize}
+                  onChange={e => setMaxSlipSize(Math.min(10, Math.max(1, +e.target.value)))}
+                  style={{ width: '80px', fontSize: '16px', fontWeight: 800, textAlign: 'center' }} />
+                <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>markets max (1–10)</span>
+              </div>
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '8px' }}>Users cannot add more than this many markets to their slip at once.</p>
+            </div>
+
+            {/* Category allow/disallow */}
+            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', marginBottom: '16px' }}>
+              <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text)', marginBottom: '12px' }}>Category rules for market slip</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {Object.entries(slipCategoryRules).map(([cat, enabled]) => (
+                  <div key={cat} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                    <div>
+                      <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text)' }}>{cat}</span>
+                      <span style={{ fontSize: '11px', color: 'var(--text-muted)', marginLeft: '8px' }}>markets</span>
+                    </div>
+                    <button
+                      onClick={() => toggleCategory(cat)}
+                      style={{ padding: '5px 16px', borderRadius: '99px', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: '12px', fontFamily: 'var(--font)', background: enabled ? 'rgba(38,161,123,0.15)' : 'rgba(232,93,93,0.12)', color: enabled ? 'var(--yes-color)' : 'var(--no-color)', transition: 'all 0.15s' }}
+                    >
+                      {enabled ? 'Allowed' : 'Blocked'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ background: 'rgba(232,184,75,0.06)', border: '1px solid rgba(232,184,75,0.2)', borderRadius: '10px', padding: '12px 16px', fontSize: '12px', color: '#888', lineHeight: 1.6 }}>
+              💡 Changes apply immediately. Blocked categories prevent users from adding those markets to their slip.
             </div>
           </div>
         )}
@@ -596,9 +681,9 @@ export default function Admin() {
         {/* ── CREATE MULTI MARKET ── */}}
         {tab === 'create-multi' && (
           <div style={{ maxWidth: '600px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-              <h2 style={{ fontSize: '20px', fontWeight: 800 }}>Create Multi Market</h2>
-              <button className="btn btn-ghost btn-sm" onClick={() => setTab('all-multi')}>← Back</button>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h2 style={{ fontSize: '20px', fontWeight: 800 }}>{editingMarket ? 'Edit Market' : 'Create Multi Market'}</h2>
+              <button className="btn btn-ghost btn-sm" onClick={() => { setTab('all-multi'); setEditingMarket(null); setEditForm({}) }}>← Back</button>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -607,14 +692,14 @@ export default function Admin() {
                   Market Description <span style={{ color: 'var(--no-color)' }}>*</span>
                 </label>
                 <textarea className="input" placeholder='e.g. "ETH above $4,000 by Apr 30, 2026 at 11:59 PM UTC"'
-                  value={multiForm.description} onChange={e => setMF('description', e.target.value)} rows={3} maxLength={280} />
+                  value={editingMarket ? editForm.description : multiForm.description} onChange={e => editingMarket ? setEF('description', e.target.value) : setMF('description', e.target.value)} rows={3} maxLength={280} />
                 <div style={{ fontSize: '11px', color: '#555', marginTop: '4px', textAlign: 'right' }}>{multiForm.description.length}/280</div>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
                   <label style={{ fontSize: '13px', fontWeight: 600, color: '#CCC', display: 'block', marginBottom: '6px' }}>Category</label>
-                  <select className="input" value={multiForm.category} onChange={e => setMF('category', e.target.value)}>
+                  <select className="input" value={editingMarket ? editForm.category : multiForm.category} onChange={e => editingMarket ? setEF('category', e.target.value) : setMF('category', e.target.value)}>
                     {['Crypto', 'Sports', 'Politics', 'Economy', 'Social Media', 'Tech'].map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
@@ -623,7 +708,7 @@ export default function Admin() {
                     YES Probability (%) <span style={{ color: 'var(--no-color)' }}>*</span>
                   </label>
                   <input className="input" type="number" min="1" max="99" placeholder="e.g. 65"
-                    value={multiForm.yesProb} onChange={e => setMF('yesProb', e.target.value)} />
+                    value={editingMarket ? editForm.yesProb : multiForm.yesProb} onChange={e => editingMarket ? setEF('yesProb', e.target.value) : setMF('yesProb', e.target.value)} />
                   {multiForm.yesProb && (
                     <div style={{ fontSize: '11px', color: '#666', marginTop: '4px' }}>
                       YES: {multiForm.yesProb}% · NO: {100 - +multiForm.yesProb}%
@@ -659,10 +744,11 @@ export default function Admin() {
                 </div>
               )}
 
-              <button className="btn btn-gold btn-lg" onClick={handleCreateMulti}
-                disabled={creating || !multiForm.description.trim() || !multiForm.endDate}
+              <button className="btn btn-gold btn-lg"
+                onClick={editingMarket ? handleSaveEdit : handleCreateMulti}
+                disabled={creating || (!editingMarket && (!multiForm.description.trim() || !multiForm.endDate))}
                 style={{ width: '100%', fontWeight: 700 }}>
-                {creating ? <><span className="spinner" /> Creating...</> : '+ Create Multi Market'}
+                {creating ? <><span className="spinner" /> Saving...</> : editingMarket ? 'Save Changes' : 'Create Multi Market'}
               </button>
             </div>
           </div>

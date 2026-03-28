@@ -192,8 +192,8 @@ function SingleMarketCard({ market, selection, onSelect }) {
         </div>
       ) : (
         <div style={{ display: 'flex', gap: '6px' }}>
-          <button className="btn btn-yes btn-sm" style={{ flex: 1, fontWeight: 700 }} onClick={() => onSelect(market, 'YES')}>+ YES {Math.round(liveYes)}¢</button>
-          <button className="btn btn-no btn-sm" style={{ flex: 1, fontWeight: 700 }} onClick={() => onSelect(market, 'NO')}>+ NO {Math.round(liveNo)}¢</button>
+          <button className="btn btn-yes btn-sm" style={{ flex: 1, fontWeight: 700 }} onClick={() => onSelect(market, 'YES')}>YES {Math.round(liveYes)}¢</button>
+          <button className="btn btn-no btn-sm" style={{ flex: 1, fontWeight: 700 }} onClick={() => onSelect(market, 'NO')}>NO {Math.round(liveNo)}¢</button>
         </div>
       )}
 
@@ -405,7 +405,9 @@ export default function MultiMarket() {
     if (txStep === 'done') return 'Bet placed!'
     if (!isConnected) return 'Connect to Bet'
     if (selCount < 1) return 'Select a market'
-    return `CALL IT — ${selCount > 1 ? selCount + '-Leg' : 'Single'} →`
+    return `CALL IT ${selCount > 1 ? selCount + ' Leg' : 'Single'}`
+  }
+
   }
 
   return (
@@ -456,12 +458,12 @@ export default function MultiMarket() {
             )}
           </div>
 
-          {/* Bet Slip */}
+          {/* Market Slip */}
           <div className="bet-slip-sticky" style={{ position: 'sticky', top: '84px' }}>
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '14px', overflow: 'hidden' }}>
               <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text)' }}>Bet Slip</div>
+                  <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text)' }}>Market Slip</div>
                   <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{selCount}/10 selected</div>
                 </div>
                 {selCount > 0 && <button className="btn btn-ghost btn-sm" onClick={() => setSelections({})}>Clear</button>}
