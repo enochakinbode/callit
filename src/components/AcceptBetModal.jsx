@@ -78,7 +78,7 @@ function LiveChart({ baseProb, seed, side }) {
         <span style={{ fontSize: '13px', fontWeight: 700, color: parseFloat(change) >= 0 ? 'var(--yes-color)' : 'var(--no-color)' }}>
           {parseFloat(change) >= 0 ? '▲' : '▼'} {Math.abs(parseFloat(change))}%
         </span>
-        <span style={{ fontSize: '11px', color: '#555' }}>chance YES</span>
+        <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>chance YES</span>
       </div>
 
       <div style={{ cursor: 'crosshair' }}>
@@ -93,7 +93,7 @@ function LiveChart({ baseProb, seed, side }) {
           {[minV, minV + range * 0.5, maxV].map((v, i) => (
             <g key={i}>
               <line x1={pad.l} y1={ty(v)} x2={pad.l + cW} y2={ty(v)} stroke="rgba(255,255,255,0.05)" strokeWidth="1" strokeDasharray="3,3" />
-              <text x={pad.l + cW + 5} y={ty(v) + 4} fontSize="9" fill="#555" fontFamily="var(--mono)">{v.toFixed(0)}%</text>
+              <text x={pad.l + cW + 5} y={ty(v) + 4} fontSize="9" fill="var(--text-dim)" fontFamily="var(--mono)">{v.toFixed(0)}%</text>
             </g>
           ))}
           <polygon points={`${pad.l},${pad.t + cH} ${pts} ${pad.l + cW},${pad.t + cH}`} fill="url(#abg)" />
@@ -116,7 +116,7 @@ function LiveChart({ baseProb, seed, side }) {
           <button key={p} onClick={() => setPeriod(p)} style={{
             padding: '4px 10px', borderRadius: '5px', border: 'none', cursor: 'pointer',
             background: period === p ? 'rgba(59,130,246,0.15)' : 'transparent',
-            color: period === p ? '#3B82F6' : '#555',
+            color: period === p ? '#3B82F6' : 'var(--text-dim)',
             fontSize: '11px', fontWeight: 700, fontFamily: 'var(--font)', transition: 'all 0.14s',
           }}>{p}</button>
         ))}
@@ -149,7 +149,7 @@ function StakerChat({ bet, isCreator }) {
 
   return (
     <div>
-      <div style={{ fontSize: '12px', fontWeight: 700, color: '#666', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px' }}>
+      <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px' }}>
         💬 Staker Discussion
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '10px', maxHeight: '100px', overflowY: 'auto' }}>
@@ -161,14 +161,14 @@ function StakerChat({ bet, isCreator }) {
                 {m.role === 'creator' ? '🟡' : '🔵'}
               </div>
               <div style={{ maxWidth: '75%' }}>
-                <div style={{ fontSize: '10px', color: '#555', marginBottom: '3px', textAlign: isMe ? 'right' : 'left' }}>
+                <div style={{ fontSize: '10px', color: 'var(--text-dim)', marginBottom: '3px', textAlign: isMe ? 'right' : 'left' }}>
                   {m.role === 'creator' ? 'Creator' : 'Acceptor'} · {m.time}
                 </div>
                 <div style={{
                   background: isMe ? 'rgba(232,184,75,0.08)' : 'rgba(255,255,255,0.04)',
                   border: `1px solid ${isMe ? 'rgba(232,184,75,0.2)' : 'rgba(255,255,255,0.08)'}`,
                   borderRadius: '10px', padding: '8px 12px',
-                  fontSize: '13px', color: '#CCC', lineHeight: 1.5,
+                  fontSize: '13px', color: 'var(--text)', lineHeight: 1.5,
                 }}>
                   {m.text}
                 </div>
@@ -282,19 +282,19 @@ export default function AcceptBetModal({ bet, onClose, onSuccess }) {
     >
       <div
         onClick={e => e.stopPropagation()}
-        style={{ background: '#0A0A0A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', width: '100%', maxWidth: '520px', margin: '0 auto', padding: '16px', animation: 'slideUp 0.22s ease' }}
+        style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '16px', width: '100%', maxWidth: '520px', margin: '0 auto', padding: '16px', animation: 'slideUp 0.22s ease' }}
       >
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
           <h2 style={{ fontSize: '16px', fontWeight: 800, margin: 0 }}>Confirm Your Call</h2>
-          <button onClick={onClose} disabled={isLoading} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '6px 12px', color: '#888', cursor: 'pointer', fontSize: '16px', fontFamily: 'var(--font)' }}>✕</button>
+          <button onClick={onClose} disabled={isLoading} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)', borderRadius: '8px', padding: '6px 12px', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '16px', fontFamily: 'var(--font)' }}>✕</button>
         </div>
 
         {/* 1. Creator says */}
-        <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '10px', marginBottom: '8px' }}>
-          <div style={{ fontSize: '10px', color: '#555', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: '6px' }}>Creator Says</div>
-          <p style={{ fontSize: '13px', fontWeight: 600, color: '#FFF', lineHeight: 1.45, margin: 0 }}>{bet.description}</p>
-          <div style={{ fontSize: '11px', color: '#555', marginTop: '6px' }}>🕐 {resDateStr} · {resTimeStr} UTC</div>
+        <div style={{ background: 'rgba(128,128,128,0.06)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px', marginBottom: '8px' }}>
+          <div style={{ fontSize: '10px', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: '6px' }}>Creator Says</div>
+          <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)', lineHeight: 1.45, margin: 0 }}>{bet.description}</p>
+          <div style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '6px' }}>🕐 {resDateStr} · {resTimeStr} UTC</div>
         </div>
 
         {/* 2. Your position (counter-statement) */}
@@ -312,26 +312,26 @@ export default function AcceptBetModal({ bet, onClose, onSuccess }) {
         </div>
 
         {/* 3. Live chart */}
-        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px', padding: '10px 12px', marginBottom: '12px' }}>
-          <div style={{ fontSize: '10px', color: '#555', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: '8px' }}>Live Probability Chart</div>
+        <div style={{ background: 'rgba(128,128,128,0.05)', border: '1px solid var(--border-subtle)', borderRadius: '10px', padding: '10px 12px', marginBottom: '12px' }}>
+          <div style={{ fontSize: '10px', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: '8px' }}>Live Probability Chart</div>
           <LiveChart baseProb={50} seed={seed} side={side} />
         </div>
 
         {/* 4. Stake details */}
-        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', padding: '10px 12px', marginBottom: '10px' }}>
-          <div style={{ fontSize: '10px', color: '#555', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: '8px' }}>Stake Summary</div>
+        <div style={{ background: 'rgba(128,128,128,0.05)', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '10px 12px', marginBottom: '10px' }}>
+          <div style={{ fontSize: '10px', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: '8px' }}>Stake Summary</div>
           {[
             { label: 'You stake', value: `$${creatorStakeUSDC} USDC`, color: side === 'NO' ? 'var(--no-color)' : 'var(--yes-color)' },
             { label: 'Creator staked', value: `$${creatorStakeUSDC} USDC`, color: 'var(--yes-color)' },
             { label: 'Total pool', value: `$${(+creatorStakeUSDC * 2).toFixed(2)} USDC`, color: 'var(--gold)' },
-            { label: `You win if ${side}`, value: `$${payout} USDC`, color: '#FFF' },
+            { label: `You win if ${side}`, value: `$${payout} USDC`, color: 'var(--text)' },
           ].map((row, i) => (
             <div key={i} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: i < 3 ? '8px' : 0, paddingBottom: i === 2 ? '8px' : 0, borderBottom: i === 2 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
-              <span style={{ fontSize: '13px', color: '#666' }}>{row.label}</span>
+              <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{row.label}</span>
               <span style={{ fontSize: '13px', fontWeight: 700, color: row.color, fontFamily: 'var(--mono)' }}>{row.value}</span>
             </div>
           ))}
-          <div style={{ fontSize: '11px', color: '#444', marginTop: '8px' }}>98% payout · 2% fee deducted from winner</div>
+          <div style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '8px' }}>98% payout · 2% fee deducted from winner</div>
         </div>
 
         {/* Suspicious Transaction explanation — shown before user confirms */}
@@ -340,7 +340,7 @@ export default function AcceptBetModal({ bet, onClose, onSuccess }) {
             <span style={{ fontSize: '16px', flexShrink: 0 }}>⚠️</span>
             <div>
               <div style={{ fontSize: '12px', fontWeight: 700, color: '#fbbf24', marginBottom: '4px' }}>Your wallet may show "Suspicious Transaction"</div>
-              <p style={{ fontSize: '12px', color: '#888', lineHeight: 1.6, margin: 0 }}>
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.6, margin: 0 }}>
                 This is normal for USDC approval on new contracts. We are only approving the exact amount you are staking (${creatorStakeUSDC} USDC) — not your entire wallet. Callit only ever touches this specific amount.
               </p>
             </div>
@@ -353,7 +353,7 @@ export default function AcceptBetModal({ bet, onClose, onSuccess }) {
             <span style={{ fontSize: '14px', flexShrink: 0 }}>🔒</span>
             <div>
               <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--no-color)', marginBottom: '3px' }}>This bet cannot be cancelled once staked</div>
-              <p style={{ fontSize: '12px', color: '#888', lineHeight: 1.6, margin: 0 }}>
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.6, margin: 0 }}>
                 By confirming, you are locking your stake into the smart contract. Neither you nor the creator can cancel after this point. Only market expiry or resolution will release the funds.
               </p>
             </div>
@@ -368,13 +368,13 @@ export default function AcceptBetModal({ bet, onClose, onSuccess }) {
         )}
 
         {/* 5. Staker chat */}
-        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', padding: '10px 12px', marginBottom: '12px' }}>
+        <div style={{ background: 'rgba(128,128,128,0.05)', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '10px 12px', marginBottom: '12px' }}>
           <StakerChat bet={bet} isCreator={false} />
         </div>
 
         {/* Progress indicator */}
         {isLoading && (
-          <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', padding: '12px 14px', marginBottom: '16px' }}>
+          <div style={{ background: 'rgba(128,128,128,0.05)', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '12px 14px', marginBottom: '16px' }}>
             {[
               { label: 'Approve USDC', done: approveConfirmed || step === 'betting' || step === 'done', active: step === 'approving' },
               { label: 'Confirm bet', done: betConfirmed || step === 'done', active: step === 'betting' },
@@ -383,7 +383,7 @@ export default function AcceptBetModal({ bet, onClose, onSuccess }) {
                 <div style={{ width: 18, height: 18, borderRadius: '50%', flexShrink: 0, background: s.done ? 'var(--yes-color)' : s.active ? 'var(--gold)' : 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 800, color: '#000' }}>
                   {s.done ? '✓' : i + 1}
                 </div>
-                <span style={{ fontSize: '12px', color: s.active ? '#FFF' : s.done ? 'var(--yes-color)' : '#555' }}>{s.label}</span>
+                <span style={{ fontSize: '12px', color: s.active ? 'var(--text)' : s.done ? 'var(--yes-color)' : 'var(--text-dim)' }}>{s.label}</span>
                 {s.active && <span className="spinner" style={{ width: 14, height: 14 }} />}
               </div>
             ))}

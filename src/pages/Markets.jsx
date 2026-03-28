@@ -77,14 +77,14 @@ function MultiCard({ market, onViewDetail }) {
 
       {/* Pool + Expires */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
-        <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '8px', padding: '8px 10px' }}>
-          <div style={{ fontSize: '9px', color: '#555', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '2px' }}>Pool</div>
+        <div style={{ background: 'rgba(128,128,128,0.06)', borderRadius: '8px', padding: '8px 10px' }}>
+          <div style={{ fontSize: '9px', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '2px' }}>Pool</div>
           <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--gold)', fontFamily: 'var(--mono)' }}>{market.volume || '$0'}</div>
         </div>
-        <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '8px', padding: '8px 10px' }}>
-          <div style={{ fontSize: '9px', color: '#555', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '2px' }}>Expires</div>
+        <div style={{ background: 'rgba(128,128,128,0.06)', borderRadius: '8px', padding: '8px 10px' }}>
+          <div style={{ fontSize: '9px', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '2px' }}>Expires</div>
           <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text)', fontFamily: 'var(--mono)', lineHeight: 1.3 }}>
-            {market.endDate}<br /><span style={{ color: '#888', fontSize: '10px' }}>{market.endTime}</span>
+            {market.endDate}<br /><span style={{ color: 'var(--text-muted)', fontSize: '10px' }}>{market.endTime}</span>
           </div>
         </div>
       </div>
@@ -97,7 +97,7 @@ function MultiCard({ market, onViewDetail }) {
       {/* View details */}
       <button
         onClick={onViewDetail}
-        style={{ width: '100%', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', padding: '9px', color: '#666', fontSize: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font)' }}
+        style={{ width: '100%', background: 'rgba(128,128,128,0.06)', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '9px', color: 'var(--text-muted)', fontSize: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font)' }}
       >
         📊 View Chart & Details
       </button>
