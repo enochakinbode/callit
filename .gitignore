@@ -4,3 +4,7 @@ dist
 .env.local
 .DS_Store
 *.local
+out
+cache
+broadcast
+relayer/data
