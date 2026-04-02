@@ -6,17 +6,21 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "relayer": "node relayer/index.js",
+    "test:relayer": "node --test relayer/test/*.test.js"
   },
   "dependencies": {
     "@rainbow-me/rainbowkit": "^2.1.2",
     "@tanstack/react-query": "^5.28.0",
+    "@vercel/functions": "^3.4.3",
     "ethers": "^6.11.1",
+    "pg": "^8.20.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.22.3",
-    "wagmi": "^2.5.20",
-    "viem": "^2.9.0"
+    "viem": "^2.9.0",
+    "wagmi": "^2.5.20"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.2.1",
