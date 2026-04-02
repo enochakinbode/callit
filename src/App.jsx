@@ -1,13 +1,12 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import { Component } from 'react'
 import Navbar from './components/Navbar'
 import Home from './pages/Home'
 import Markets from './pages/Markets'
-import P2PMarket from './pages/P2PMarket'
-import MultiMarket from './pages/MultiMarket'
 import HowItWorks from './pages/HowItWorks'
 import Admin from './pages/Admin'
-import StakeHistory from './pages/StakeHistory'
+import Portfolio from './pages/StakeHistory'
+import AccumulatorComingSoon from './pages/AccumulatorComingSoon'
 
 class ErrorBoundary extends Component {
   constructor(props) { super(props); this.state = { hasError: false } }
@@ -35,11 +34,12 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/markets" element={<Markets />} />
-        <Route path="/p2p" element={<P2PMarket />} />
-        <Route path="/multi" element={<MultiMarket />} />
+        <Route path="/p2p" element={<Navigate to="/markets" replace />} />
+        <Route path="/portfolio" element={<Portfolio />} />
+        <Route path="/history" element={<Navigate to="/portfolio" replace />} />
+        <Route path="/multi" element={<AccumulatorComingSoon />} />
         <Route path="/how-it-works" element={<HowItWorks />} />
         <Route path="/admin" element={<Admin />} />
-        <Route path="/history" element={<StakeHistory />} />
       </Routes>
     </ErrorBoundary>
   )

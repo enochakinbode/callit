@@ -350,8 +350,8 @@ export default function MarketDetailModal({ market, onClose, onCallIt }) {
         {/* Comments & Activity */}
         <CommentsActivity />
 
-        {/* CALL IT — only for P2P markets */}
-        {isP2P && (market.status === 'Open' || market.status === 0) && (
+        {/* Matching action for legacy interactive contexts */}
+        {isP2P && (market.status === 'Open' || market.status === 0) && onCallIt && (
           <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
             <div style={{ background: acceptorSide === 'YES' ? 'rgba(38,161,123,0.06)' : 'rgba(232,93,93,0.06)', border: `1px solid ${acceptorSide === 'YES' ? 'rgba(38,161,123,0.2)' : 'rgba(232,93,93,0.2)'}`, borderRadius: '10px', padding: '12px 16px', marginBottom: '12px' }}>
               <div style={{ fontSize: '10px', color: acceptorSide === 'YES' ? 'var(--yes-color)' : 'var(--no-color)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em', marginBottom: '4px' }}>You are saying</div>
@@ -366,15 +366,24 @@ export default function MarketDetailModal({ market, onClose, onCallIt }) {
               style={{ width: '100%', fontWeight: 800, fontSize: '16px', padding: '14px' }}
               onClick={() => { onCallIt?.(market, acceptorSide); onClose() }}
             >
-              CALL IT — {acceptorSide} {Math.round(acceptorProb)}¢
+              Take {acceptorSide} {Math.round(acceptorProb)}¢
             </button>
           </div>
         )}
 
-        {/* Multi — just a note, betting is done on the card */}
+        {isP2P && (market.status === 'Open' || market.status === 0) && !onCallIt && (
+          <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px solid rgba(255,255,255,0.06)', textAlign: 'center' }}>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '12px' }}>
+              This market was registered through the relayer. Direct matching from the new Base vault flow is the next UI step.
+            </p>
+            <button onClick={onClose} className="btn btn-outline btn-lg" style={{ width: '100%' }}>Back to Markets →</button>
+          </div>
+        )}
+
+        {/* Accumulator placeholder */}
         {!isP2P && (
           <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px solid rgba(255,255,255,0.06)', textAlign: 'center' }}>
-            <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '12px' }}>Select YES or NO directly on the market card to add to your bet slip.</p>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '12px' }}>Accumulator markets are coming soon in the relayer-first flow.</p>
             <button onClick={onClose} className="btn btn-outline btn-lg" style={{ width: '100%' }}>Back to Markets →</button>
           </div>
         )}

@@ -4,115 +4,55 @@
 export const DEV_WALLET = "0x3dc5b334EA7a6a33da61F950bBEfaC615cF1A55b"
 
 export const SUPPORTED_CHAINS = {
+  baseSepolia: {
+    id: 84532,
+    name: "Base Sepolia",
+    label: "Base Sepolia",
+    live: false,
+    testnet: true,
+    rpc: "https://sepolia.base.org",
+    explorer: "https://sepolia.basescan.org",
+    vault: (import.meta.env.VITE_BASE_SEPOLIA_VAULT_ADDRESS || '').trim(),
+    tokens: {
+      // Native USDC on Base Sepolia — Circle docs
+      USDC: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      USDT: "",
+    },
+  },
   base: {
     id: 8453,
     name: "Base",
-    label: "Base",
+    label: "Base Mainnet",
     live: true,
     rpc: "https://mainnet.base.org",
     explorer: "https://basescan.org",
-    factory: "0x4efc17c30391D5be0FA8B8C736b5222CC59F7818",
+    vault: (import.meta.env.VITE_BASE_VAULT_ADDRESS || '').trim(),
     tokens: {
       USDC: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
       USDT: "0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2",
     },
-    priceFeeds: {
-      BTC: "0x64c911996D3c6aC71f9b455B1E8E7266BcbD848F",
-      ETH: "0x71041dddad3595F9CEd3dCCFBe3D1F4b0a16Bb70",
-    },
-  },
-  arbitrum: {
-    id: 42161,
-    name: "Arbitrum",
-    label: "Arbitrum",
-    live: false, // coming soon
-    rpc: "https://arb1.arbitrum.io/rpc",
-    explorer: "https://arbiscan.io",
-    factory: "", // deploy next
-    tokens: {
-      USDC: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
-      USDT: "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
-    },
-  },
-  bnb: {
-    id: 56,
-    name: "BNB Chain",
-    label: "BNB",
-    live: false,
-    rpc: "https://bsc-dataseed.binance.org",
-    explorer: "https://bscscan.com",
-    factory: "",
-    tokens: {
-      USDC: "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d",
-      USDT: "0x55d398326f99059fF775485246999027B3197955",
-    },
-  },
-  solana: {
-    id: null,
-    name: "Solana",
-    label: "Solana",
-    live: false,
-    soon: true,
-  },
-  tempo: {
-    // Tempo Testnet (Moderato) — mainnet RPC pending official publish
-    // Mainnet blog: https://tempo.xyz/blog/mainnet
-    // Switch to mainnet chain ID + RPC once Tempo publishes: https://rpc.tempo.xyz
-    id: 42431,
-    name: "Tempo",
-    label: "Tempo",
-    live: false,
-    soon: true,
-    testnet: true,
-    rpc: "https://rpc.moderato.tempo.xyz",
-    rpcMainnet: "https://rpc.tempo.xyz", // mainnet — chain ID TBD
-    explorer: "https://explore.tempo.xyz",
-    factory: "", // deploy after mainnet chain ID is confirmed
-    nativeGasToken: false, // Tempo has no native gas token — fees paid in stablecoins
-    tokens: {
-      // pathUSD is Tempo's first deployed stablecoin
-      pathUSD: "0x20c0000000000000000000000000000000000000",
-      // USDC address TBD after mainnet launch
-    },
-    mpp: true, // Machine Payments Protocol supported
-    agentSettlement: true, // AI agents can auto-settle markets via MPP
-    description: "Payment-optimized blockchain by Paradigm + Stripe. Instant settlement, predictable fees, AI agent support via MPP.",
   },
 }
 
-export const ACTIVE_CHAIN = SUPPORTED_CHAINS.base
+export const ACTIVE_CHAIN = SUPPORTED_CHAINS.baseSepolia
+const DEFAULT_RELAYER_API_URL = import.meta.env.DEV ? '' : '/api'
+export const RELAYER_API_URL = (import.meta.env.VITE_RELAYER_API_URL || DEFAULT_RELAYER_API_URL).trim()
+export const RELAYER_CREATE_MARKET_PATH = '/markets'
+export const RELAYER_MARKETS_PATH = '/markets'
+export const GENLAYER_NETWORK = (import.meta.env.VITE_GENLAYER_NETWORK || 'testnet-asimov').trim()
+export const GENLAYER_NETWORK_LABEL = GENLAYER_NETWORK === 'testnet-asimov' ? 'GenLayer Asimov' : GENLAYER_NETWORK
 
-// ─── Contract ABI (key functions only for frontend) ─────────
-export const FACTORY_ABI = [
-  // Read
-  "function betCount() view returns (uint256)",
-  "function multiBetCount() view returns (uint256)",
-  "function getBet(uint256) view returns (tuple(uint256 id, address creator, address acceptor, uint256 creatorStake, uint256 acceptorStake, uint256 totalPool, uint256 creatorImpliedProb, uint256 resolutionTime, uint8 status, uint8 outcome, uint8 resType, uint8 token, address oracle, int256 targetPrice, bool creatorAbove, string description, uint256 createdAt))",
-  "function getMultiBet(uint256) view returns (tuple(uint256 id, address creator, address acceptor, uint256[] legIds, uint256 creatorStake, uint256 acceptorStake, uint256 totalPool, uint256 combinedProb, uint256 resolutionTime, uint8 status, uint8 outcome, uint8 token, uint256 createdAt))",
-  "function getUserBets(address) view returns (uint256[])",
-  "function getUserMultiBets(address) view returns (uint256[])",
-  "function getImpliedProbability(uint256) view returns (uint256 yesProb, uint256 noProb)",
-  "function getPayoutMultiplier(uint256) view returns (uint256)",
-  "function getOpenBets() view returns (uint256[])",
-  "function getOpenMultiBets() view returns (uint256[])",
-  // Write
-  "function createBet(uint256 creatorStake, uint256 resolutionTime, uint8 resType, uint8 token, address oracle, int256 targetPrice, bool creatorAbove, string description) returns (uint256)",
-  "function acceptBet(uint256 betId, uint256 acceptorStake)",
-  "function cancelBet(uint256 betId)",
-  "function resolveChainlinkBet(uint256 betId)",
-  "function createMultiBet(uint256[] legIds, uint256 creatorStake, uint8 token, uint256 resolutionTime) returns (uint256)",
-  "function acceptMultiBet(uint256 multiBetId, uint256 acceptorStake)",
-  "function resolveMultiBet(uint256 multiBetId)",
-  // Admin
-  "function resolveManualBet(uint256 betId, uint8 outcome)",
-  "function pause()",
-  "function unpause()",
-  // Events
-  "event BetCreated(uint256 indexed betId, address indexed creator, uint256 creatorStake, string description, uint8 token)",
-  "event BetAccepted(uint256 indexed betId, address indexed acceptor, uint256 acceptorStake, uint256 impliedProbBPS)",
-  "event BetResolved(uint256 indexed betId, uint8 outcome, address winner, uint256 payout)",
-  "event MultiBetCreated(uint256 indexed multiBetId, address indexed creator, uint256[] legIds)",
-  "event MultiBetResolved(uint256 indexed multiBetId, uint8 outcome, address winner, uint256 payout)",
+export const BASE_VAULT_ABI = [
+  "function minStakeAmount() view returns (uint256)",
+  "function registerApprovedMarket(bytes32 marketId, address creator, uint64 fundingDeadline, uint64 resolutionTime, bool accumulator)",
+  "function fundCreatorSide(bytes32 marketId, uint256 amount)",
+  "function matchMarket(bytes32 marketId, uint256 amount)",
+  "function cancelUnmatched(bytes32 marketId)",
+  "function recordProvisionalOutcome(bytes32 marketId, bytes32 settlementHash, uint64 disputeDeadline)",
+  "function recordDispute(bytes32 marketId)",
+  "function settleMarket(bytes32 marketId, uint8 outcome, uint256 creatorPayout, uint256 takerPayout, bytes32 settlementHash)",
+  "function refundMarket(bytes32 marketId, bytes32 settlementHash)",
+  "function setMinStakeAmount(uint256 newAmount)",
 ]
 
 export const ERC20_ABI = [
@@ -124,10 +64,12 @@ export const ERC20_ABI = [
 
 
 // ─── Constants ───────────────────────────────────────────────
-export const FEE_PERCENT = 10
+export const FEE_PERCENT = 2
 export const MIN_STAKE_USDC = 1        // 1 USDC
 export const MAX_STAKE_USDC = 100_000  // 100K USDC
 export const USDC_DECIMALS = 6
+export const GENLAYER_DISPUTE_WINDOW_HOURS = 1
+export const DEFAULT_MARKET_QUALITY_BOND_USDC = 25
 
 export const BET_STATUS = {
   0: "Open",
@@ -142,11 +84,6 @@ export const BET_OUTCOME = {
   1: "Creator Wins",
   2: "Acceptor Wins",
   3: "Draw",
-}
-
-export const RESOLUTION_TYPE = {
-  MANUAL: 0,
-  CHAINLINK: 1,
 }
 
 export const TOKEN_TYPE = {
@@ -196,11 +133,11 @@ export const calcImpliedProb = (yesStake, noStake) => {
   return { yes: +yes.toFixed(1), no: +(100 - yes).toFixed(1) }
 }
 
-/** Payout multiplier for YES side (net of 10% fee) */
+/** Payout multiplier for YES side (net of 2% fee) */
 export const calcPayoutMultiplier = (yesStake, noStake) => {
   const total = Number(yesStake) + Number(noStake)
   if (!yesStake || yesStake === 0) return 1
-  const net = total * 0.9 // 10% fee
+  const net = total * 0.98 // 2% fee
   return +(net / Number(yesStake)).toFixed(2)
 }
 

@@ -70,9 +70,9 @@ export default function StakeHistory() {
       <div className="page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '80vh' }}>
         <div style={{ textAlign: 'center', maxWidth: 360, padding: '0 20px' }}>
           <div style={{ fontSize: 56, marginBottom: 16 }}>📋</div>
-          <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 10 }}>Stake History</h2>
+          <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 10 }}>Portfolio</h2>
           <p style={{ fontSize: 14, color: '#666', lineHeight: 1.7, marginBottom: 24 }}>
-            Connect your wallet to view all your active bets, past markets, wins and losses.
+            Connect your wallet to see your open positions, settled markets, and overall performance in one place.
           </p>
           <button className="btn btn-gold btn-lg" onClick={openConnectModal} style={{ width: '100%', fontWeight: 700 }}>
             Connect Wallet
@@ -88,7 +88,7 @@ export default function StakeHistory() {
 
         {/* Header */}
         <div style={{ marginBottom: '28px' }}>
-          <h1 style={{ fontSize: '28px', fontWeight: 800, marginBottom: '6px' }}>Stake History</h1>
+          <h1 style={{ fontSize: '28px', fontWeight: 800, marginBottom: '6px' }}>Portfolio</h1>
           <p style={{ fontSize: '14px', color: '#666' }}>
             Wallet: <span style={{ fontFamily: 'var(--mono)', color: 'var(--gold)' }}>{address ? shortAddr(address) : '—'}</span>
           </p>
@@ -124,9 +124,6 @@ export default function StakeHistory() {
           </select>
           <select className="input" style={{ width: 'auto', minWidth: '100px' }} value={type} onChange={e => setType(e.target.value)}>
             {TYPE_FILTERS.map(s => <option key={s} value={s}>{s === 'All' ? 'All Types' : s}</option>)}
-          </select>
-          <select className="input" style={{ width: 'auto', minWidth: '110px' }} value={category} onChange={e => setCat(e.target.value)}>
-            {CAT_FILTERS.map(s => <option key={s} value={s}>{s === 'All' ? 'All Cats' : s}</option>)}
           </select>
           <select className="input" style={{ width: 'auto', minWidth: '130px' }} value={sortBy} onChange={e => setSort(e.target.value)}>
             <option value="newest">Newest First</option>

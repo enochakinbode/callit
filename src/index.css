@@ -184,8 +184,12 @@ select.input { cursor: pointer; }
 .navbar-inner { max-width: 1200px; margin: 0 auto; height: 100%; display: flex; align-items: center; gap: 16px; padding: 0 16px; }
 
 /* ─── Modal ──────────────────────────────────────────────── */
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 2000; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px; }
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 2000; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px; display: flex; align-items: center; justify-content: center; }
 [data-theme="light"] .modal-overlay { background: rgba(0,0,0,0.5); }
+.modal { width: min(760px, 100%); background: var(--bg-card); border: 1px solid var(--border); border-radius: 18px; box-shadow: var(--shadow); padding: 20px; animation: scaleIn 0.18s ease; }
+.modal-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+.modal-close { width: 36px; height: 36px; border-radius: 999px; border: 1px solid var(--border); background: transparent; color: var(--text-muted); cursor: pointer; font-size: 16px; }
+.modal-close:hover { border-color: var(--gold); color: var(--gold); }
 
 /* ─── Mobile ─────────────────────────────────────────────── */
 @media (max-width: 768px) {

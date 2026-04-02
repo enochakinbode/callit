@@ -81,8 +81,7 @@ export default function Navbar() {
         {/* Desktop Nav Links */}
         <div className="hide-mobile" style={{ display: 'flex', gap: '28px', alignItems: 'center', flex: 1 }}>
           <NavLink to="/markets" label="Markets" />
-          <NavLink to="/multi" label="Multi Markets" />
-          <NavLink to="/p2p" label="P2P Markets" />
+          <NavLink to="/multi" label="Accumulators" />
           <NavLink to="/how-it-works" label="How It Works" />
         </div>
 
@@ -118,12 +117,32 @@ export default function Navbar() {
               padding: '5px 10px', borderRadius: '6px',
               background: 'rgba(96,165,250,0.06)', border: '1px solid rgba(96,165,250,0.18)',
               fontSize: '11px', fontWeight: 700, color: '#60a5fa', letterSpacing: '0.04em',
-              opacity: 0.7,
             }}>
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#60a5fa', display: 'inline-block', flexShrink: 0, opacity: 0.5 }} />
-              TEMPO ⚡
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#60a5fa', display: 'inline-block', flexShrink: 0 }} />
+              POWERED BY GENLAYER
             </div>
           </div>
+
+          <Link
+            to="/portfolio"
+            className="hide-mobile"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '7px 12px',
+              borderRadius: '8px',
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.10)',
+              color: '#FFFFFF',
+              fontSize: '13px',
+              fontWeight: 600,
+              transition: 'all 0.16s ease',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            Portfolio
+          </Link>
 
           {/* Wallet button / connect */}
           {isConnected ? (
@@ -169,24 +188,6 @@ export default function Navbar() {
                     <div style={{ fontSize: '10px', color: '#666', marginBottom: '2px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Connected</div>
                     <div style={{ fontSize: '12px', fontFamily: 'var(--mono)', color: '#E8B84B' }}>{shortAddr(address)}</div>
                   </div>
-
-                  <button
-                    onClick={() => handleNav('/history')}
-                    style={{
-                      width: '100%', display: 'flex', alignItems: 'center', gap: '10px',
-                      padding: '10px 12px', background: 'transparent', border: 'none',
-                      color: '#FFFFFF', fontSize: '14px', fontWeight: 500, cursor: 'pointer',
-                      borderRadius: '8px', transition: 'background 0.14s ease',
-                      fontFamily: 'var(--font)', textAlign: 'left',
-                    }}
-                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
-                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                  >
-                    <span style={{ fontSize: '15px' }}>📋</span>
-                    <span style={{ flex: 1 }}>Stake History</span>
-                  </button>
-
-                  <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)', margin: '4px 0' }} />
 
                   <button
                     onClick={handleDisconnect}
@@ -240,8 +241,8 @@ export default function Navbar() {
         }}>
           {[
             { to: '/markets', label: 'Markets' },
-            { to: '/multi', label: 'Multi Markets' },
-            { to: '/p2p', label: 'P2P Markets' },
+            { to: '/portfolio', label: 'Portfolio' },
+            { to: '/multi', label: 'Accumulators' },
             { to: '/how-it-works', label: 'How It Works' },
           ].map(link => (
             <button
@@ -258,12 +259,6 @@ export default function Navbar() {
           ))}
           {isConnected && (
             <>
-              <button
-                onClick={() => handleNav('/history')}
-                style={{ background: 'transparent', border: 'none', color: '#CCCCCC', fontSize: '15px', fontWeight: 500, cursor: 'pointer', padding: '12px 4px', fontFamily: 'var(--font)', textAlign: 'left', borderBottom: '1px solid rgba(255,255,255,0.04)' }}
-              >
-                📋 Stake History
-              </button>
               <button
                 onClick={handleDisconnect}
                 style={{ background: 'transparent', border: 'none', color: '#E85D5D', fontSize: '15px', fontWeight: 500, cursor: 'pointer', padding: '12px 4px', fontFamily: 'var(--font)', textAlign: 'left' }}

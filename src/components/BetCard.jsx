@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { formatUSDC } from '../lib/config'
+import { GENLAYER_DISPUTE_WINDOW_HOURS, getResolutionProfile } from '../data/marketArchitecture'
 
 const daysLeft = ts => Math.max(0, Math.ceil((Number(ts) * 1000 - Date.now()) / 86400000))
 const CAT_COLOR = {
@@ -37,13 +38,20 @@ function ArcGauge({ prob, prevProb, size = 56 }) {
   )
 }
 
-export default function BetCard({ bet, currentUser, onAccept, onCancel }) {
+export default function BetCard({ bet, currentUser, onAccept, onCancel, onViewDetail }) {
   const seedBase = bet.id * 17 + 31
-  const [liveYes, setLiveYes] = useState(50)
-  const [prevYes, setPrevYes] = useState(50)
+  const baseProbability = Number(bet.yesProb || bet.probabilityPercent || 50)
+  const [liveYes, setLiveYes] = useState(baseProbability)
+  const [prevYes, setPrevYes] = useState(baseProbability)
+  const isLiveProbability = bet.dataSource === 'relayer'
 
   useEffect(() => {
-    if (bet.status > 1) return
+    setLiveYes(baseProbability)
+    setPrevYes(baseProbability)
+  }, [baseProbability])
+
+  useEffect(() => {
+    if (bet.status > 1 || isLiveProbability) return
     const t = setInterval(() => {
       setLiveYes(prev => {
         setPrevYes(prev)
@@ -51,13 +59,13 @@ export default function BetCard({ bet, currentUser, onAccept, onCancel }) {
       })
     }, 3200 + seedBase % 2000)
     return () => clearInterval(t)
-  }, [bet.status, seedBase])
+  }, [bet.status, isLiveProbability, seedBase])
 
   const liveNo = parseFloat((100 - liveYes).toFixed(1))
   const isCreator = currentUser?.toLowerCase() === bet.creator?.toLowerCase()
   const isOpen = bet.status === 0
   const isMatched = bet.status === 1
-  const isManual = bet.resType === 0
+  const resolutionProfile = getResolutionProfile(bet)
   const acceptorSide = bet.creatorAbove ? 'NO' : 'YES'
   const acceptorCents = Math.round(acceptorSide === 'YES' ? liveYes : liveNo)
   const totalPoolUSDC = formatUSDC(bet.totalPool)
@@ -79,8 +87,8 @@ export default function BetCard({ bet, currentUser, onAccept, onCancel }) {
           <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', marginBottom: '8px' }}>
             <span className={`badge ${CAT_COLOR[bet.category] || 'badge-gray'}`}>{bet.category || 'Crypto'}</span>
             <span className="badge badge-gray">P2P</span>
-            <span className={`badge ${isManual ? 'badge-manual' : 'badge-auto'}`}>
-              {isManual ? 'MANUAL' : 'AUTO'}
+            <span className={`badge ${resolutionProfile.tone === 'objective' ? 'badge-auto' : 'badge-manual'}`}>
+              {resolutionProfile.badge}
             </span>
             {isCreator && <span className="badge badge-gold">YOU</span>}
           </div>
@@ -105,24 +113,37 @@ export default function BetCard({ bet, currentUser, onAccept, onCancel }) {
         </div>
       </div>
 
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+        <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '8px', padding: '7px 10px' }}>
+          <div style={{ fontSize: '9px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: '2px' }}>Primary Sources</div>
+          <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text)', lineHeight: 1.35 }}>
+            {resolutionProfile.primarySources.join(' · ')}
+          </div>
+        </div>
+        <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '8px', padding: '7px 10px' }}>
+          <div style={{ fontSize: '9px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: '2px' }}>Dispute Window</div>
+          <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text)' }}>{GENLAYER_DISPUTE_WINDOW_HOURS}h after provisional result</div>
+        </div>
+      </div>
+
       {/* Status + days left */}
       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px' }}>
-        <span style={{ color: 'var(--text-muted)' }}>{isOpen ? 'Open' : isMatched ? 'Matched' : 'Resolved'}</span>
+        <span style={{ color: 'var(--text-muted)' }}>{isOpen ? 'Approved + Open' : isMatched ? 'Matched · awaiting GenLayer resolution' : 'Resolved'}</span>
         <span style={{ color: dl < 7 ? 'var(--no-color)' : 'var(--text-muted)', fontWeight: 600 }}>{dl}d left</span>
       </div>
 
-      {/* CALL IT */}
-      {isOpen && !isCreator && (
+      {/* Match action for legacy interactive contexts */}
+      {isOpen && !isCreator && onAccept && (
         <button
           className={`btn ${acceptorSide === 'YES' ? 'btn-yes' : 'btn-no'}`}
           style={{ width: '100%', fontWeight: 800, fontSize: '14px', padding: '11px' }}
           onClick={() => onAccept({ ...bet, side: acceptorSide })}
         >
-          CALL IT {acceptorSide} {acceptorCents}¢
+          Take {acceptorSide} {acceptorCents}¢
         </button>
       )}
 
-      {isOpen && isCreator && bet.acceptor === '0x0000000000000000000000000000000000000000' && (
+      {isOpen && isCreator && bet.acceptor === '0x0000000000000000000000000000000000000000' && onCancel && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
           <div style={{ fontSize: '10px', color: 'var(--text-muted)', textAlign: 'center' }}>
             Once accepted, this market cannot be cancelled
@@ -136,6 +157,19 @@ export default function BetCard({ bet, currentUser, onAccept, onCancel }) {
       {isMatched && (
         <div style={{ textAlign: 'center', fontSize: '11px', color: 'var(--text-muted)', padding: '7px', background: 'rgba(255,255,255,0.02)', borderRadius: '6px' }}>
           Matched — awaiting resolution
+        </div>
+      )}
+
+      {!onAccept && isOpen && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ textAlign: 'center', fontSize: '11px', color: 'var(--text-muted)', padding: '7px', background: 'rgba(255,255,255,0.02)', borderRadius: '6px' }}>
+            Registered through the relayer. Base matching opens in the new vault flow.
+          </div>
+          {onViewDetail && (
+            <button className="btn btn-outline btn-sm" style={{ width: '100%' }} onClick={() => onViewDetail(bet)}>
+              View Details
+            </button>
+          )}
         </div>
       )}
     </div>
