@@ -1,8 +1,11 @@
 <svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="50" cy="50" r="46" fill="#E8B84B"/>
-  <path d="M60 30 A 22 22 0 1 0 60 70" stroke="#0E0B06" stroke-width="7" stroke-linecap="round" fill="none"/>
-  <circle cx="44" cy="35" r="3.5" fill="#0E0B06"/>
-  <line x1="44" y1="41" x2="44" y2="52" stroke="#0E0B06" stroke-width="6" stroke-linecap="round"/>
-  <line x1="56" y1="17" x2="56" y2="52" stroke="#0E0B06" stroke-width="6" stroke-linecap="round"/>
-  <line x1="49" y1="44" x2="64" y2="44" stroke="#0E0B06" stroke-width="5.5" stroke-linecap="round"/>
+  <rect x="8" y="8" width="84" height="84" rx="22" fill="#0D0D0D"/>
+  <rect x="18" y="18" width="64" height="64" rx="18" fill="url(#favicon-gradient)"/>
+  <path d="M60 34H46C39.373 34 34 39.373 34 46V54C34 60.627 39.373 66 46 66H60" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round"/>
+  <defs>
+    <linearGradient id="favicon-gradient" x1="18" y1="18" x2="82" y2="82" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#60A5FA"/>
+      <stop offset="1" stop-color="#E8B84B"/>
+    </linearGradient>
+  </defs>
 </svg>

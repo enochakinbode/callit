@@ -3,6 +3,7 @@ import { Component } from 'react'
 import Navbar from './components/Navbar'
 import Home from './pages/Home'
 import Markets from './pages/Markets'
+import P2PBuilder from './pages/P2PBuilder'
 import HowItWorks from './pages/HowItWorks'
 import Admin from './pages/Admin'
 import Portfolio from './pages/StakeHistory'
@@ -34,7 +35,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/markets" element={<Markets />} />
-        <Route path="/p2p" element={<Navigate to="/markets" replace />} />
+        <Route path="/p2p" element={<P2PBuilder />} />
         <Route path="/portfolio" element={<Portfolio />} />
         <Route path="/history" element={<Navigate to="/portfolio" replace />} />
         <Route path="/multi" element={<AccumulatorComingSoon />} />

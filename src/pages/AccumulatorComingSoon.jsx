@@ -38,7 +38,7 @@ export default function AccumulatorComingSoon() {
         </div>
 
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-          <Link to="/markets" className="btn btn-gold btn-lg">Browse P2P Markets</Link>
+          <Link to="/p2p" className="btn btn-gold btn-lg">Open P2P Builder</Link>
           <Link to="/how-it-works" className="btn btn-outline btn-lg">See How It Works</Link>
         </div>
       </div>

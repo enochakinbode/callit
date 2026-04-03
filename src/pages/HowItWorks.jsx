@@ -14,15 +14,29 @@ const Section = ({ title, children }) => (
   </section>
 )
 
-const Card = ({ title, body, badge }) => (
-  <div style={{ background: '#0D0D0D', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', padding: '18px' }}>
+const Card = ({ title, body, badge, tone = 'default' }) => (
+  <div style={{
+    background: tone === 'genlayer' ? 'rgba(96,165,250,0.08)' : '#0D0D0D',
+    border: tone === 'genlayer' ? '1px solid rgba(96,165,250,0.22)' : '1px solid rgba(255,255,255,0.06)',
+    borderRadius: '14px',
+    padding: '18px',
+  }}>
     {badge && (
-      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 10px', borderRadius: '99px', background: 'rgba(232,184,75,0.08)', border: '1px solid rgba(232,184,75,0.18)', marginBottom: '10px' }}>
-        <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--gold)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{badge}</span>
+      <div style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '6px',
+        padding: '4px 10px',
+        borderRadius: '99px',
+        background: tone === 'genlayer' ? 'rgba(96,165,250,0.12)' : 'rgba(232,184,75,0.08)',
+        border: tone === 'genlayer' ? '1px solid rgba(96,165,250,0.26)' : '1px solid rgba(232,184,75,0.18)',
+        marginBottom: '10px',
+      }}>
+        <span style={{ fontSize: '11px', fontWeight: 700, color: tone === 'genlayer' ? '#60a5fa' : 'var(--gold)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{badge}</span>
       </div>
     )}
     <div style={{ fontSize: '15px', fontWeight: 700, color: '#FFF', marginBottom: '8px' }}>{title}</div>
-    <div style={{ fontSize: '13px', color: '#777', lineHeight: 1.65 }}>{body}</div>
+    <div style={{ fontSize: '13px', color: tone === 'genlayer' ? '#c7dbfb' : '#777', lineHeight: 1.65 }}>{body}</div>
   </div>
 )
 
@@ -43,9 +57,9 @@ export default function HowItWorks() {
     <div className="page">
       <div className="container" style={{ paddingTop: '32px', paddingBottom: '60px' }}>
         <div style={{ marginBottom: '34px' }}>
-          <h1 style={{ fontSize: '32px', fontWeight: 900, marginBottom: '10px', letterSpacing: '-0.03em' }}>How Callit v3 Works</h1>
+          <h1 style={{ fontSize: '32px', fontWeight: 900, marginBottom: '10px', letterSpacing: '-0.03em' }}>How Callit Works</h1>
           <p style={{ fontSize: '15px', color: '#666', lineHeight: 1.7 }}>
-            Callit is built so the part that judges a market is separate from the part that holds user funds. When you create a P2P market, you are first submitting the market idea itself: the statement, the deadline, and any supporting links. That request goes to the relayer, which sends it for review, gets back the approved market definition, and handles the setup needed for the market to go live. After that, Base takes over as the money layer. It is where USDC is deposited, where both sides of the market are locked in, and where payouts or refunds happen once the result is final. That means the review process and the money movement are kept separate from each other, which makes the product easier to reason about and safer to operate.
+            Callit is built so the part that decides whether a market is valid is separate from the part that holds user funds. When you create a P2P market, you submit the statement, deadline, and supporting sources. The relayer passes that request into GenLayer, and GenLayer acts as the decision layer: it decides whether the market is clear enough to approve, chooses the right source set, and later resolves the outcome. Base then acts as the money layer where USDC is deposited, matched, and paid out after finality.
           </p>
         </div>
 
@@ -54,12 +68,13 @@ export default function HowItWorks() {
             <Card
               badge="Relayer"
               title="Submission layer"
-              body="The UI sends the market draft to the relayer. The relayer submits it to GenLayer, receives the approved market response, registers the Base-side market when ready, and returns the market IDs back to the user."
+              body="The UI sends the market draft to the relayer. The relayer forwards it into GenLayer, receives the approved market response, registers the Base-side market when ready, and returns the market IDs back to the user."
             />
             <Card
               badge="GenLayer"
               title="Decision layer"
-              body="Approves market definitions before any money moves, chooses the category and source set, resolves outcomes from web data or structured feeds, and opens the dispute window."
+              body="Approves market definitions before any money moves, makes sure only valid markets are created, chooses the category and source set, resolves outcomes from evidence, and opens the dispute window."
+              tone="genlayer"
             />
             <Card
               badge="Base"
@@ -72,9 +87,9 @@ export default function HowItWorks() {
         <Section title="P2P market flow">
           <Step n="1" title="Draft the market" body="The creator writes the binary statement, sets the cutoff time, and optionally adds supporting links." />
           <Step n="2" title="Submit to the relayer" body="The UI sends the request to the relayer. The relayer is the service that submits the market for review, receives the result, and handles registration." />
-          <Step n="3" title="GenLayer admission" body="GenLayer checks that the market is clear, verifiable, and supported. It chooses the category, template, and approved primary sources before returning a market ID and opening the path into Base." />
+          <Step n="3" title="GenLayer admission" body="GenLayer checks that the market is clear, verifiable, and supported before it can exist in the system at all. It approves only valid markets, chooses the category, template, and approved primary sources, then returns a market ID and opens the path into Base." />
           <Step n="4" title="Base funding" body="Once admitted and registered on Base, the creator approves USDC and funds the market in the vault. Funds stay on Base for the full life of the market." />
-          <Step n="5" title="Resolution and challenge" body={`GenLayer resolves the market from frozen primary sources. Every provisional result opens a ${GENLAYER_DISPUTE_WINDOW_HOURS} hour challenge window before final Base settlement.`} />
+          <Step n="5" title="Resolution and challenge" body={`GenLayer resolves the market from frozen primary sources and supporting evidence, then opens a ${GENLAYER_DISPUTE_WINDOW_HOURS} hour challenge window before final Base settlement.`} />
           <Step n="6" title="Settlement" body={`If the result survives appeals, the Base vault pays the winner and keeps a ${PLATFORM_FEE_PERCENT}% winner fee. If the market is unresolvable, the vault refunds both sides.`} />
         </Section>
 
@@ -87,6 +102,7 @@ export default function HowItWorks() {
             <Card
               title="Primary sources are frozen"
               body="GenLayer chooses the platform-approved primary sources and freezes them into the market definition. Creator-added sources are supplemental only and can support evidence, but cannot override agreeing primary sources."
+              tone="genlayer"
             />
             <Card
               title="Refund on uncertainty"
@@ -133,10 +149,10 @@ export default function HowItWorks() {
         <div style={{ textAlign: 'center', padding: '30px', background: 'rgba(232,184,75,0.04)', border: '1px solid rgba(232,184,75,0.15)', borderRadius: '16px' }}>
           <h3 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '10px' }}>Build against the new flow</h3>
           <p style={{ fontSize: '14px', color: '#666', marginBottom: '20px' }}>
-            Markets are no longer “creator decides, admin verifies.” They are submitted through the relayer, admitted by GenLayer, funded on Base, and settled only after finality.
+            Markets are no longer “creator decides, admin verifies.” GenLayer is the decision layer that approves valid market creation first, resolves the market, and protects the path into final settlement on Base.
           </p>
           <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link to="/markets" className="btn btn-gold btn-lg">Browse P2P Markets</Link>
+            <Link to="/p2p" className="btn btn-gold btn-lg">Open P2P Builder</Link>
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-# { "Depends": "py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6" }
+# { "Depends": "py-genlayer:latest" }
 
 from dataclasses import dataclass
 import datetime
@@ -32,6 +32,7 @@ REUTERS_SOURCE = "reuters"
 OFFICIAL_RELEASE_SOURCE = "official-release"
 CENTRAL_BANK_SOURCE = "central-bank"
 DEFAULT_DISPUTE_WINDOW_HOURS = 1
+ZERO_ADDRESS_HEX = "0x0000000000000000000000000000000000000000"
 
 MARKET_STATUS_APPROVED_PENDING_FUNDING = "APPROVED_PENDING_FUNDING"
 MARKET_STATUS_PROVISIONALLY_RESOLVED = "PROVISIONALLY_RESOLVED"
@@ -70,8 +71,8 @@ class ApprovedMarket:
     probability_bps: u16
     confidence_bps: u16
     quality_bond_usdc: u32
-    primary_sources: DynArray[str]
-    supplemental_sources: DynArray[str]
+    primary_sources: str
+    supplemental_sources: str
 
 
 @allow_storage
@@ -81,7 +82,7 @@ class ResolutionPacket:
     outcome: str
     status: str
     evidence_summary: str
-    evidence_urls: DynArray[str]
+    evidence_urls: str
     confidence_bps: u16
     settlement_hash: str
     dispute_deadline_iso: str
@@ -94,10 +95,10 @@ class ChallengeRecord:
     challenger: Address
     opened_at_iso: str
     reason: str
-    evidence_urls: DynArray[str]
+    evidence_urls: str
     status: str
     decision_summary: str
-    decision_evidence_urls: DynArray[str]
+    decision_evidence_urls: str
     decided_outcome: str
     confidence_bps: u16
     decided_at_iso: str
@@ -130,22 +131,24 @@ class CallitMarketManager(gl.Contract):
         statement = str(market_data.get("statement", "")).strip()
         cutoff_iso = str(market_data.get("cutoff_iso", "")).strip()
         funding_deadline_iso = str(market_data.get("funding_deadline_iso", "")).strip()
-        resolution_rule = str(market_data.get("resolution_rule", "")).strip()
 
         self._require_non_empty(statement, "statement")
         self._require_non_empty(cutoff_iso, "cutoff")
         self._require_non_empty(funding_deadline_iso, "funding deadline")
-        self._require_non_empty(resolution_rule, "resolution rule")
         if not self._iso_after(funding_deadline_iso, current_time_iso):
             raise gl.vm.UserError("Funding deadline must be in the future")
         if not self._iso_after(cutoff_iso, funding_deadline_iso):
             raise gl.vm.UserError("Cutoff must be after funding deadline")
 
         frozen_statement = statement
-        frozen_rule = resolution_rule
         frozen_supplemental_sources = self._normalize_generic_string_list(
             market_data.get("supplemental_sources", []),
             "supplemental sources",
+        )
+        supported_categories = self._supported_categories()
+        supported_templates_by_category = self._supported_templates_by_category()
+        supported_primary_sources_by_category = (
+            self._supported_primary_sources_by_category()
         )
 
         def admission_review() -> str:
@@ -155,14 +158,13 @@ class CallitMarketManager(gl.Contract):
             Statement: {frozen_statement}
             Cutoff ISO: {cutoff_iso}
             Funding deadline ISO: {funding_deadline_iso}
-            Resolution rule: {frozen_rule}
             Supplemental sources: {json.dumps(frozen_supplemental_sources)}
 
             You must classify the market into exactly one supported category and one supported template,
-            then choose the approved primary source set yourself.
-            Supported categories: {json.dumps(self._supported_categories())}
-            Supported templates by category: {json.dumps(self._supported_templates_by_category())}
-            Supported primary sources by category: {json.dumps(self._supported_primary_sources_by_category())}
+            then generate the canonical resolution rule yourself and choose the approved primary source set.
+            Supported categories: {json.dumps(supported_categories)}
+            Supported templates by category: {json.dumps(supported_templates_by_category)}
+            Supported primary sources by category: {json.dumps(supported_primary_sources_by_category)}
 
             Return JSON only in this shape:
             {{
@@ -172,18 +174,22 @@ class CallitMarketManager(gl.Contract):
               "confidence_bps": integer,
               "category": "supported category",
               "template_id": "supported template for that category",
+              "resolution_rule": "canonical frozen rule used to resolve the market",
               "primary_sources": ["approved source id", "approved source id"],
               "settlement_mode": "PRIMARY_SOURCE_CONSENSUS"
             }}
 
             Reject any market that is vague, subjective, unsupported, duplicated in meaning,
-            or not tied to explicit verifiable evidence. Approve only if the resolution rule
-            is frozen and the market can be settled with named sources. If no supported
-            category and template fit, reject the market.
+            or not tied to explicit verifiable evidence. Approve only if you can produce
+            a precise canonical resolution rule and the market can be settled with named sources.
+            If no supported category and template fit, reject the market.
             Additional source rules:
             - User-provided supplemental sources are supporting context only.
             - Approved markets must use PRIMARY_SOURCE_CONSENSUS settlement.
             - Approved markets must choose at least two approved primary sources from the chosen category.
+            - Treat the submitted statement as the YES-side claim.
+            - The generated resolution rule must explicitly define what resolves YES, what resolves NO,
+              and when to return UNRESOLVABLE.
             """
             response = (
                 gl.nondet.exec_prompt(prompt).replace("```json", "").replace("```", "")
@@ -202,10 +208,12 @@ class CallitMarketManager(gl.Contract):
         inferred_category = str(review.get("category", "")).strip()
         inferred_template_id = str(review.get("template_id", "")).strip()
         inferred_settlement_mode = str(review.get("settlement_mode", "")).strip()
+        inferred_resolution_rule = str(review.get("resolution_rule", "")).strip()
         inferred_primary_sources = self._normalize_source_list(
             review.get("primary_sources", [])
         )
 
+        self._require_non_empty(inferred_resolution_rule, "resolution rule")
         self._require_supported_category(inferred_category)
         self._require_supported_template(inferred_category, inferred_template_id)
         self._require_supported_settlement_mode(inferred_settlement_mode)
@@ -226,14 +234,14 @@ class CallitMarketManager(gl.Contract):
             statement=frozen_statement,
             cutoff_iso=cutoff_iso,
             funding_deadline_iso=funding_deadline_iso,
-            resolution_rule=frozen_rule,
+            resolution_rule=inferred_resolution_rule,
             settlement_mode=inferred_settlement_mode,
             status=MARKET_STATUS_APPROVED_PENDING_FUNDING,
             probability_bps=inferred_probability_bps,
             confidence_bps=self._normalize_confidence_bps(review.get("confidence_bps")),
             quality_bond_usdc=self.quality_bond_usdc,
-            primary_sources=DynArray[str](*inferred_primary_sources),
-            supplemental_sources=DynArray[str](*frozen_supplemental_sources),
+            primary_sources=self._encode_string_list(inferred_primary_sources),
+            supplemental_sources=self._encode_string_list(frozen_supplemental_sources),
         )
 
         self.approved_markets[market_id] = approved_market
@@ -248,26 +256,45 @@ class CallitMarketManager(gl.Contract):
         if self._is_final_market_status(approved.status):
             raise gl.vm.UserError("Cannot update probability for finalized market")
 
-        packet = self.resolution_packets[market_id]
-        challenge = self.challenge_records[market_id]
+        packet = self._resolution_packet_or_default(market_id)
+        challenge = self._challenge_record_or_default(market_id)
+        approved_market_id = approved.market_id
+        approved_category = approved.category
+        approved_template_id = approved.template_id
+        approved_statement = approved.statement
+        approved_cutoff_iso = approved.cutoff_iso
+        approved_resolution_rule = approved.resolution_rule
+        approved_settlement_mode = approved.settlement_mode
+        approved_status = approved.status
+        approved_confidence_bps = int(approved.confidence_bps)
+        primary_sources = self._decode_stored_string_list(approved.primary_sources)
+        supplemental_sources = self._decode_stored_string_list(
+            approved.supplemental_sources
+        )
+        packet_dict = (
+            self._resolution_packet_dict(packet) if packet.market_id != "" else None
+        )
+        challenge_dict = (
+            self._challenge_dict(challenge) if challenge.market_id != "" else None
+        )
 
         def probability_review() -> str:
             prompt = f"""
             Estimate the current probability for an approved Callit binary market.
 
-            Market ID: {approved.market_id}
-            Category: {approved.category}
-            Template: {approved.template_id}
-            Statement: {approved.statement}
-            Cutoff ISO: {approved.cutoff_iso}
-            Resolution rule: {approved.resolution_rule}
-            Settlement mode: {approved.settlement_mode}
-            Primary sources: {json.dumps([source for source in approved.primary_sources])}
-            Supplemental sources: {json.dumps([source for source in approved.supplemental_sources])}
-            Current status: {approved.status}
-            Existing confidence_bps: {int(approved.confidence_bps)}
-            Resolution packet: {json.dumps(self._resolution_packet_dict(packet) if packet.market_id != "" else None)}
-            Challenge record: {json.dumps(self._challenge_dict(challenge) if challenge.market_id != "" else None)}
+            Market ID: {approved_market_id}
+            Category: {approved_category}
+            Template: {approved_template_id}
+            Statement: {approved_statement}
+            Cutoff ISO: {approved_cutoff_iso}
+            Resolution rule: {approved_resolution_rule}
+            Settlement mode: {approved_settlement_mode}
+            Primary sources: {json.dumps(primary_sources)}
+            Supplemental sources: {json.dumps(supplemental_sources)}
+            Current status: {approved_status}
+            Existing confidence_bps: {approved_confidence_bps}
+            Resolution packet: {json.dumps(packet_dict)}
+            Challenge record: {json.dumps(challenge_dict)}
 
             Return JSON only in this shape:
             {{
@@ -309,7 +336,7 @@ class CallitMarketManager(gl.Contract):
         approved = self.approved_markets[market_id]
         if approved.market_id == "":
             raise gl.vm.UserError("Unknown market")
-        if self.resolution_packets[market_id].market_id != "":
+        if self._resolution_packet_or_default(market_id).market_id != "":
             raise gl.vm.UserError("Sources are frozen after resolution starts")
 
         sources_data = self._parse_json_object(sources_payload, "sources payload")
@@ -324,8 +351,10 @@ class CallitMarketManager(gl.Contract):
         if len(new_primary_sources) == 0 and len(new_supplemental_sources) == 0:
             raise gl.vm.UserError("No new sources provided")
 
-        primary_sources = [source for source in approved.primary_sources]
-        supplemental_sources = [source for source in approved.supplemental_sources]
+        primary_sources = self._decode_stored_string_list(approved.primary_sources)
+        supplemental_sources = self._decode_stored_string_list(
+            approved.supplemental_sources
+        )
 
         for source in new_primary_sources:
             if source not in primary_sources:
@@ -341,8 +370,8 @@ class CallitMarketManager(gl.Contract):
             primary_sources,
         )
 
-        approved.primary_sources = DynArray[str](*primary_sources)
-        approved.supplemental_sources = DynArray[str](*supplemental_sources)
+        approved.primary_sources = self._encode_string_list(primary_sources)
+        approved.supplemental_sources = self._encode_string_list(supplemental_sources)
         self.approved_markets[market_id] = approved
         return json.dumps(
             {
@@ -376,7 +405,7 @@ class CallitMarketManager(gl.Contract):
             raise gl.vm.UserError("Unknown market")
         if approved.status != MARKET_STATUS_APPROVED_PENDING_FUNDING:
             raise gl.vm.UserError("Market is not ready for provisional resolution")
-        if self.resolution_packets[market_id].market_id != "":
+        if self._resolution_packet_or_default(market_id).market_id != "":
             raise gl.vm.UserError("Market already has a resolution packet")
         if not self._iso_at_or_after(current_time_iso, approved.cutoff_iso):
             raise gl.vm.UserError("Cutoff time not reached")
@@ -385,19 +414,27 @@ class CallitMarketManager(gl.Contract):
             current_time_iso, self._dispute_window_seconds()
         )
 
-        primary_sources = [source for source in approved.primary_sources]
-        supplemental_sources = [source for source in approved.supplemental_sources]
+        approved_market_id = approved.market_id
+        approved_category = approved.category
+        approved_template_id = approved.template_id
+        approved_statement = approved.statement
+        approved_cutoff_iso = approved.cutoff_iso
+        approved_resolution_rule = approved.resolution_rule
+        primary_sources = self._decode_stored_string_list(approved.primary_sources)
+        supplemental_sources = self._decode_stored_string_list(
+            approved.supplemental_sources
+        )
 
         def resolve_from_sources() -> str:
             prompt = f"""
             Resolve the following frozen binary market.
 
-            Market ID: {approved.market_id}
-            Category: {approved.category}
-            Template: {approved.template_id}
-            Statement: {approved.statement}
-            Cutoff ISO: {approved.cutoff_iso}
-            Resolution rule: {approved.resolution_rule}
+            Market ID: {approved_market_id}
+            Category: {approved_category}
+            Template: {approved_template_id}
+            Statement: {approved_statement}
+            Cutoff ISO: {approved_cutoff_iso}
+            Resolution rule: {approved_resolution_rule}
             Primary sources: {json.dumps(primary_sources)}
             Supplemental sources: {json.dumps(supplemental_sources)}
 
@@ -438,7 +475,11 @@ class CallitMarketManager(gl.Contract):
             outcome=resolution_outcome,
             status=resolution_status,
             evidence_summary=str(result.get("evidence_summary", "")).strip(),
-            evidence_urls=DynArray[str](*result["evidence_urls"]),
+            evidence_urls=self._encode_string_list(
+                self._normalize_generic_string_list(
+                    result.get("evidence_urls", []), "resolution evidence"
+                )
+            ),
             confidence_bps=self._normalize_confidence_bps(result.get("confidence_bps")),
             settlement_hash=settlement_hash,
             dispute_deadline_iso=dispute_deadline_iso,
@@ -470,7 +511,7 @@ class CallitMarketManager(gl.Contract):
         approved = self.approved_markets[market_id]
         if approved.market_id == "":
             raise gl.vm.UserError("Unknown market")
-        packet = self.resolution_packets[market_id]
+        packet = self._resolution_packet_or_default(market_id)
         if packet.market_id == "":
             raise gl.vm.UserError("Market has no provisional resolution")
         if approved.status != MARKET_STATUS_PROVISIONALLY_RESOLVED:
@@ -489,7 +530,7 @@ class CallitMarketManager(gl.Contract):
         if self._iso_after(current_time_iso, packet.dispute_deadline_iso):
             raise gl.vm.UserError("Dispute window closed")
 
-        existing = self.challenge_records[market_id]
+        existing = self._challenge_record_or_default(market_id)
         if existing.market_id != "" and existing.status == CHALLENGE_STATUS_OPEN:
             raise gl.vm.UserError("Market already has an open challenge")
 
@@ -498,10 +539,10 @@ class CallitMarketManager(gl.Contract):
             challenger=gl.message.sender_address,
             opened_at_iso=current_time_iso,
             reason=reason,
-            evidence_urls=DynArray[str](*evidence_urls),
+            evidence_urls=self._encode_string_list(evidence_urls),
             status=CHALLENGE_STATUS_OPEN,
             decision_summary="",
-            decision_evidence_urls=DynArray[str](),
+            decision_evidence_urls=self._encode_string_list([]),
             decided_outcome="",
             confidence_bps=u16(0),
             decided_at_iso="",
@@ -518,34 +559,47 @@ class CallitMarketManager(gl.Contract):
         approved = self.approved_markets[market_id]
         if approved.market_id == "":
             raise gl.vm.UserError("Unknown market")
-        packet = self.resolution_packets[market_id]
-        challenge = self.challenge_records[market_id]
+        packet = self._resolution_packet_or_default(market_id)
+        challenge = self._challenge_record_or_default(market_id)
         if challenge.market_id == "":
             raise gl.vm.UserError("No challenge found")
         if challenge.status != CHALLENGE_STATUS_OPEN:
             raise gl.vm.UserError("Challenge is not open")
 
-        primary_sources = [source for source in approved.primary_sources]
-        supplemental_sources = [source for source in approved.supplemental_sources]
-        challenge_evidence_urls = [url for url in challenge.evidence_urls]
+        approved_market_id = approved.market_id
+        approved_statement = approved.statement
+        approved_category = approved.category
+        approved_template_id = approved.template_id
+        approved_resolution_rule = approved.resolution_rule
+        primary_sources = self._decode_stored_string_list(approved.primary_sources)
+        supplemental_sources = self._decode_stored_string_list(
+            approved.supplemental_sources
+        )
+        challenge_evidence_urls = self._decode_stored_string_list(
+            challenge.evidence_urls
+        )
+        original_outcome = packet.outcome
+        original_evidence_summary = packet.evidence_summary
+        original_evidence_urls = self._decode_stored_string_list(packet.evidence_urls)
+        challenge_reason = challenge.reason
 
         def review_challenge() -> str:
             prompt = f"""
             Review a challenged provisional market resolution for Callit.
 
-            Market ID: {approved.market_id}
-            Statement: {approved.statement}
-            Category: {approved.category}
-            Template: {approved.template_id}
-            Resolution rule: {approved.resolution_rule}
+            Market ID: {approved_market_id}
+            Statement: {approved_statement}
+            Category: {approved_category}
+            Template: {approved_template_id}
+            Resolution rule: {approved_resolution_rule}
             Primary sources: {json.dumps(primary_sources)}
             Supplemental sources: {json.dumps(supplemental_sources)}
 
-            Original provisional outcome: {packet.outcome}
-            Original evidence summary: {packet.evidence_summary}
-            Original evidence URLs: {json.dumps([url for url in packet.evidence_urls])}
+            Original provisional outcome: {original_outcome}
+            Original evidence summary: {original_evidence_summary}
+            Original evidence URLs: {json.dumps(original_evidence_urls)}
 
-            Challenger reason: {challenge.reason}
+            Challenger reason: {challenge_reason}
             Challenger evidence URLs: {json.dumps(challenge_evidence_urls)}
 
             Return JSON only in this shape:
@@ -580,8 +634,8 @@ class CallitMarketManager(gl.Contract):
 
         challenge.status = challenge_decision
         challenge.decision_summary = str(decision.get("decision_summary", "")).strip()
-        challenge.decision_evidence_urls = DynArray[str](
-            *self._normalize_generic_string_list(
+        challenge.decision_evidence_urls = self._encode_string_list(
+            self._normalize_generic_string_list(
                 decision.get("evidence_urls", []), "challenge decision evidence"
             )
         )
@@ -602,11 +656,11 @@ class CallitMarketManager(gl.Contract):
         approved = self.approved_markets[market_id]
         if approved.market_id == "":
             raise gl.vm.UserError("Unknown market")
-        packet = self.resolution_packets[market_id]
+        packet = self._resolution_packet_or_default(market_id)
         if packet.market_id == "":
             raise gl.vm.UserError("Market has no resolution packet")
 
-        challenge = self.challenge_records[market_id]
+        challenge = self._challenge_record_or_default(market_id)
         if challenge.market_id != "" and challenge.status == CHALLENGE_STATUS_OPEN:
             raise gl.vm.UserError("Open challenge must be decided before finalization")
 
@@ -636,7 +690,7 @@ class CallitMarketManager(gl.Contract):
 
     @gl.public.view
     def get_challenge(self, market_id: str) -> str:
-        challenge = self.challenge_records[market_id]
+        challenge = self._challenge_record_or_default(market_id)
         if challenge.market_id == "":
             return json.dumps({"exists": False, "challenge": None}, sort_keys=True)
         return json.dumps(
@@ -747,7 +801,7 @@ class CallitMarketManager(gl.Contract):
 
     @gl.public.view
     def get_resolution_packet(self, market_id: str) -> str:
-        packet = self.resolution_packets[market_id]
+        packet = self._resolution_packet_or_default(market_id)
         return json.dumps(self._resolution_packet_dict(packet), sort_keys=True)
 
     @gl.public.view
@@ -888,6 +942,27 @@ class CallitMarketManager(gl.Contract):
                 normalized.append(cleaned)
         return normalized
 
+    def _encode_string_list(self, values: list[str]) -> str:
+        return json.dumps(values, sort_keys=True)
+
+    def _decode_stored_string_list(self, value: str) -> list[str]:
+        if value.strip() == "":
+            return []
+
+        try:
+            parsed = json.loads(value)
+        except Exception:
+            raise gl.vm.UserError("Stored source list is invalid")
+
+        if not isinstance(parsed, list):
+            raise gl.vm.UserError("Stored source list is invalid")
+
+        normalized: list[str] = []
+        for item in parsed:
+            if isinstance(item, str) and item not in normalized:
+                normalized.append(item)
+        return normalized
+
     def _parse_json_object(self, payload: str, label: str) -> dict[str, typing.Any]:
         try:
             parsed = json.loads(payload)
@@ -1006,9 +1081,42 @@ class CallitMarketManager(gl.Contract):
             MARKET_STATUS_FINAL_REFUNDED,
         ]
 
+    def _resolution_packet_or_default(self, market_id: str) -> ResolutionPacket:
+        return self.resolution_packets.get(
+            market_id,
+            ResolutionPacket(
+                market_id="",
+                outcome="",
+                status="",
+                evidence_summary="",
+                evidence_urls="",
+                confidence_bps=u16(0),
+                settlement_hash="",
+                dispute_deadline_iso="",
+            ),
+        )
+
+    def _challenge_record_or_default(self, market_id: str) -> ChallengeRecord:
+        return self.challenge_records.get(
+            market_id,
+            ChallengeRecord(
+                market_id="",
+                challenger=Address(ZERO_ADDRESS_HEX),
+                opened_at_iso="",
+                reason="",
+                evidence_urls="",
+                status="",
+                decision_summary="",
+                decision_evidence_urls="",
+                decided_outcome="",
+                confidence_bps=u16(0),
+                decided_at_iso="",
+            ),
+        )
+
     def _market_dict(self, market: ApprovedMarket) -> dict[str, typing.Any]:
-        packet = self.resolution_packets[market.market_id]
-        challenge = self.challenge_records[market.market_id]
+        packet = self._resolution_packet_or_default(market.market_id)
+        challenge = self._challenge_record_or_default(market.market_id)
         market_dict = {
             "market_id": market.market_id,
             "creator": format(market.creator),
@@ -1024,8 +1132,10 @@ class CallitMarketManager(gl.Contract):
             "probability_percent": int(market.probability_bps) / 100,
             "confidence_bps": int(market.confidence_bps),
             "quality_bond_usdc": int(market.quality_bond_usdc),
-            "primary_sources": [source for source in market.primary_sources],
-            "supplemental_sources": [source for source in market.supplemental_sources],
+            "primary_sources": self._decode_stored_string_list(market.primary_sources),
+            "supplemental_sources": self._decode_stored_string_list(
+                market.supplemental_sources
+            ),
         }
         if packet.market_id != "":
             market_dict["resolution_packet"] = self._resolution_packet_dict(packet)
@@ -1045,7 +1155,7 @@ class CallitMarketManager(gl.Contract):
             "outcome": packet.outcome,
             "status": packet.status,
             "evidence_summary": packet.evidence_summary,
-            "evidence_urls": [url for url in packet.evidence_urls],
+            "evidence_urls": self._decode_stored_string_list(packet.evidence_urls),
             "confidence_bps": int(packet.confidence_bps),
             "settlement_hash": packet.settlement_hash,
             "dispute_deadline_iso": packet.dispute_deadline_iso,
@@ -1057,10 +1167,12 @@ class CallitMarketManager(gl.Contract):
             "challenger": format(challenge.challenger),
             "opened_at_iso": challenge.opened_at_iso,
             "reason": challenge.reason,
-            "evidence_urls": [url for url in challenge.evidence_urls],
+            "evidence_urls": self._decode_stored_string_list(challenge.evidence_urls),
             "status": challenge.status,
             "decision_summary": challenge.decision_summary,
-            "decision_evidence_urls": [url for url in challenge.decision_evidence_urls],
+            "decision_evidence_urls": self._decode_stored_string_list(
+                challenge.decision_evidence_urls
+            ),
             "decided_outcome": challenge.decided_outcome,
             "confidence_bps": int(challenge.confidence_bps),
             "decided_at_iso": challenge.decided_at_iso,

@@ -41,6 +41,7 @@ export const RELAYER_CREATE_MARKET_PATH = '/markets'
 export const RELAYER_MARKETS_PATH = '/markets'
 export const GENLAYER_NETWORK = (import.meta.env.VITE_GENLAYER_NETWORK || 'testnet-asimov').trim()
 export const GENLAYER_NETWORK_LABEL = GENLAYER_NETWORK === 'testnet-asimov' ? 'GenLayer Asimov' : GENLAYER_NETWORK
+export const GENLAYER_STUDIO_URL = (import.meta.env.VITE_GENLAYER_STUDIO_URL || 'https://studio.genlayer.com/contracts?import-contract=0xC0e1cDF15dA2AD5880e8D73C14FF84C510eF293f').trim()
 
 export const BASE_VAULT_ABI = [
   "function minStakeAmount() view returns (uint256)",

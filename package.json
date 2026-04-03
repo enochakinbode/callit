@@ -7,8 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "relayer": "node relayer/index.js",
-    "test:relayer": "node --test relayer/test/*.test.js"
+    "relayer": "node api/_runtime.js",
+    "test:relayer": "node --test api/test/*.test.js"
   },
   "dependencies": {
     "@rainbow-me/rainbowkit": "^2.1.2",

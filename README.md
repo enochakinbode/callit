@@ -1,4 +1,4 @@
-# Callit v3
+# Callit
 
 Prediction markets with:
 

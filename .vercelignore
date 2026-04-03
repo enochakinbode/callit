@@ -1,0 +1,8 @@
+base
+docs
+api/test
+api/data
+genlayer/deploy
+genlayer/script
+dist
+README.md

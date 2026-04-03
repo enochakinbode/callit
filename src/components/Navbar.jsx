@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAccount, useDisconnect } from 'wagmi'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
-import Logo from './Logo'
 import { useTheme } from '../context/ThemeContext'
 import { shortAddr } from '../lib/config'
 
@@ -72,7 +71,6 @@ export default function Navbar() {
       }}>
         {/* Logo */}
         <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '9px', textDecoration: 'none', flexShrink: 0 }}>
-          <Logo size={30} />
           <span style={{ fontWeight: 800, fontSize: '17px', color: '#FFFFFF', letterSpacing: '-0.03em' }}>
             Callit
           </span>
