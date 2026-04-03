@@ -9,11 +9,7 @@ Prediction markets with:
 
 ## Vercel deployment
 
-This project is ready to run on Vercel as:
-
-- a Vite frontend
-- API functions from [`api`](/Users/enochlee/Desktop/callit/api)
-- a Vercel cron hitting `/api/sync` every 10 minutes
+This project is ready to run on Vercel as a Vite frontend.
 
 ### Project settings
 
@@ -32,31 +28,7 @@ Frontend:
 - `VITE_GENLAYER_STUDIO_URL=https://studio.genlayer.com/contracts?import-contract=0xC0e1cDF15dA2AD5880e8D73C14FF84C510eF293f`
 - `VITE_BASE_SEPOLIA_VAULT_ADDRESS`
 
-Database:
-
-- `DATABASE_URL` or `POSTGRES_URL`
-
-Cron protection:
-
-- `CRON_SECRET`
-
-GenLayer relayer:
-
-- `RELAYER_GENLAYER_NETWORK=testnet-asimov`
-- `RELAYER_GENLAYER_RPC_URL`
-- `RELAYER_GENLAYER_CONTRACT_ADDRESS`
-- `RELAYER_GENLAYER_PRIVATE_KEY`
-
-Base relayer:
-
-- `RELAYER_BASE_RPC_URL`
-- `RELAYER_BASE_CHAIN_ID=84532`
-- `RELAYER_BASE_VAULT_ADDRESS`
-- `RELAYER_BASE_APPROVAL_PRIVATE_KEY`
-- `RELAYER_BASE_SETTLEMENT_PRIVATE_KEY`
-
 ### Notes
 
-- The Vercel functions should use Postgres, not the local JSON state file.
-- [vercel.json](/Users/enochlee/Desktop/callit/vercel.json) already includes the SPA rewrite and the sync cron.
+- [vercel.json](/Users/enochlee/Desktop/callit/vercel.json) includes the SPA rewrite for the frontend deployment.
 - `.vercelignore` removes heavy local contract and test folders from the deployment upload so Vercel only gets what it needs to build and run.
