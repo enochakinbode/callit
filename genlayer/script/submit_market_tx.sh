@@ -136,7 +136,6 @@ console.log(JSON.stringify(payload));
 ' "$STATEMENT" "$CUTOFF_ISO" "$FUNDING_DEADLINE_ISO" "$SUPPLEMENTAL_SOURCES_JSON_NORMALIZED")"
 
 echo "Submitting market transaction..."
-WRITE_OUTPUT=""
 WRITE_CMD=(genlayer write "$CA" submit_market --args "$MARKET_PAYLOAD")
 if [[ -n "$RPC_URL" ]]; then
   WRITE_CMD+=(--rpc "$RPC_URL")
@@ -145,18 +144,22 @@ else
   echo "Using CLI network configuration."
 fi
 
-if ! WRITE_OUTPUT="$("${WRITE_CMD[@]}" 2>&1)"; then
-  echo "$WRITE_OUTPUT" >&2
+WRITE_LOG_FILE="$(mktemp)"
+cleanup() {
+  rm -f "$WRITE_LOG_FILE"
+}
+trap cleanup EXIT
+
+# Stream GenLayer CLI output live so password prompts and progress are visible.
+if ! { "${WRITE_CMD[@]}" 2>&1 | tee "$WRITE_LOG_FILE"; }; then
   exit 1
 fi
 
-echo "$WRITE_OUTPUT"
-
 TX_HASH=""
 if command -v rg >/dev/null 2>&1; then
-  TX_HASH="$(printf '%s\n' "$WRITE_OUTPUT" | rg -o '0x[0-9a-fA-F]{64}' -m 1 || true)"
+  TX_HASH="$(rg -o '0x[0-9a-fA-F]{64}' -m 1 "$WRITE_LOG_FILE" || true)"
 else
-  TX_HASH="$(printf '%s\n' "$WRITE_OUTPUT" | grep -Eo '0x[0-9a-fA-F]{64}' | head -n 1 || true)"
+  TX_HASH="$(grep -Eo '0x[0-9a-fA-F]{64}' "$WRITE_LOG_FILE" | head -n 1 || true)"
 fi
 
 if [[ -z "$TX_HASH" ]]; then
