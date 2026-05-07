@@ -1,8 +1,7 @@
-# Callit
+[!IMPORTANT]
 
-Prediction markets with:
-
-- GenLayer as the market admission, resolution, and appeal layer
-- Base as the shared USDC vault and payout layer
-- React + Vite on the front end
-- Foundry for Base vault testing and deployment
+> ### 🚨 This Project has Moved
+> 
+> **New Repository:** [https://github.com/callit-fun](https://github.com/callit-fun)
+>
+> Please update your links, dependencies, and git remotes. This version is now **read-only**.
